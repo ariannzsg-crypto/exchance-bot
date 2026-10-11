@@ -1,0 +1,18 @@
+{
+  "name": "EXCHANCE — قیمت لحظه‌ای بازار",
+  "short_name": "EXCHANCE",
+  "description": "قیمت لحظه‌ای ارز، طلا و رمزارز با دستیار هوشمند",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f5ff",
+  "theme_color": "#0e0a1e",
+  "categories": ["finance", "news", "utilities"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

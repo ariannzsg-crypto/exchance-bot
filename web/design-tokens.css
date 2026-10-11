@@ -1,0 +1,306 @@
+/* =========================================================
+   EXCHANCE BOT — iOS 26 Liquid Glass Design System
+   ========================================================= */
+
+:root {
+    /* ===== COLOR SCALES ===== */
+    --gray-1: #fcfcfc; --gray-2: #f9f9f9; --gray-3: #f0f0f0;
+    --gray-4: #e8e8e8; --gray-5: #e0e0e0; --gray-6: #d9d9d9;
+    --gray-7: #cecece; --gray-8: #bbbbbb; --gray-9: #8d8d8d;
+    --gray-10: #838383; --gray-11: #646464; --gray-12: #202020;
+
+    --violet-9: #6e56cf; --violet-10: #654dc4; --violet-11: #6550b9;
+    --green-8: #5bb88b; --green-9: #30a46c; --green-10: #2b9a66;
+    --green-11: #218358;
+    --red-8: #eb8e90; --red-9: #e5484d; --red-10: #dc3e42; --red-11: #ce2c31;
+    --amber-8: #e2a336; --amber-9: #ffc53d;
+    --blue-9: #0090ff;
+    --pink-9: #d6409f;
+    --cyan-9: #00a2c7;
+
+    /* ===== SPACING ===== */
+    --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+    --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+    --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+
+    /* ===== RADIUS (iOS 26) ===== */
+    --radius-sm: 14px;
+    --radius-md: 20px;
+    --radius-lg: 28px;
+    --radius-xl: 36px;
+    --radius-2xl: 48px;
+    --radius-full: 9999px;
+
+    /* ===== TYPOGRAPHY ===== */
+    --font-sans: 'Vazirmatn', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+    --text-xs: 0.6875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.5rem;
+
+    --font-normal: 400; --font-medium: 500; --font-semibold: 600;
+    --font-bold: 700; --font-extrabold: 800;
+
+    --leading-tight: 1.15; --leading-normal: 1.5; --leading-relaxed: 1.7;
+
+    /* ===== SHADOWS ===== */
+    --shadow-xs: 0 1px 1px rgba(0,0,0,0.02), 0 2px 6px rgba(100,90,140,0.04);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.03), 0 4px 16px rgba(100,90,140,0.07);
+    --shadow-md: 0 2px 6px rgba(0,0,0,0.04), 0 8px 28px rgba(100,90,140,0.10);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.05), 0 16px 44px rgba(100,90,140,0.14);
+    --shadow-xl: 0 8px 20px rgba(0,0,0,0.06), 0 28px 72px rgba(100,90,140,0.20);
+    --shadow-2xl: 0 12px 32px rgba(0,0,0,0.08), 0 40px 100px rgba(100,90,140,0.28);
+
+    --shadow-glow-accent: 0 6px 24px rgba(110,86,207,0.32);
+    --shadow-glow-up: 0 6px 24px rgba(48,164,108,0.30);
+    --shadow-glow-down: 0 6px 24px rgba(229,72,77,0.30);
+
+    /* ===== EASING ===== */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-spring-2: cubic-bezier(0.22, 1.2, 0.36, 1);
+    --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --dur-fast: 180ms;
+    --dur-normal: 280ms;
+    --dur-slow: 420ms;
+    --dur-slower: 700ms;
+
+    /* ===== BLUR ===== */
+    --blur-sm: 16px;
+    --blur-md: 28px;
+    --blur-lg: 44px;
+    --blur-xl: 60px;
+    --blur-2xl: 80px;
+
+    --saturate-normal: 100%;
+    --saturate-high: 180%;
+    --saturate-max: 220%;
+
+    /* ===== GLASS SURFACES ===== */
+    --glass-tint-1: rgba(255,255,255,0.42);
+    --glass-tint-2: rgba(255,255,255,0.60);
+    --glass-tint-3: rgba(255,255,255,0.78);
+    --glass-highlight: rgba(255,255,255,0.92);
+    --glass-border: rgba(255,255,255,0.72);
+    --glass-border-2: rgba(255,255,255,0.88);
+
+    /* ===== Z-INDEX ===== */
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 500;
+    --z-modal: 1000;
+    --z-popover: 1500;
+    --z-toast: 2000;
+
+    /* ===== SEMANTIC (LIGHT) ===== */
+    --bg-base: #f8f5ff;
+    --bg-surface: var(--glass-tint-1);
+    --bg-surface-2: var(--glass-tint-2);
+    --bg-elevated: var(--glass-tint-3);
+
+    --text-primary: #1a1a2e;
+    --text-secondary: #4d4d66;   /* 5.7:1 روی پس‌زمینه روشن (AA) */
+    --text-tertiary: #585874;    /* 4.7:1 روی پس‌زمینه روشن (AA) */
+
+    --border-subtle: var(--glass-border);
+    --border-strong: var(--glass-border-2);
+
+    --up: var(--green-9);
+    --up-bg: rgba(48,164,108,0.14);
+    --down: var(--red-9);
+    --down-bg: rgba(229,72,77,0.14);
+    --flat: var(--gray-9);
+    --flat-bg: rgba(141,141,141,0.12);
+
+    --accent: var(--violet-9);
+    --accent-glow: rgba(110,86,207,0.30);
+
+    /* ===== AMBIENT PALETTE ===== */
+    --c1: rgba(190,160,255,0.55);
+    --c2: rgba(255,175,210,0.50);
+    --c3: rgba(170,205,255,0.45);
+    --c4: rgba(170,240,220,0.45);
+    --c5: rgba(255,215,175,0.50);
+
+    /* ===== FOCUS / TOUCH / SAFE AREA ===== */
+    --focus-ring: 0 0 0 3px var(--bg-base), 0 0 0 6px var(--accent);
+    --focus-ring-inline: 0 0 0 3px var(--accent-glow);
+    --tap-min: 44px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+
+    /* ===== LEGACY ALIASES ===== */
+    --text: var(--text-primary);
+    --dim: var(--text-secondary);
+    --mute: var(--text-tertiary);
+    --glass: var(--bg-surface);
+    --glass-2: var(--bg-surface-2);
+    --edge: var(--border-subtle);
+    --blur: var(--blur-lg);
+    --r: var(--radius-xl);
+    --sh-sm: var(--shadow-sm);
+    --sh: var(--shadow-lg);
+    --sh-lg: var(--shadow-xl);
+}
+
+/* ===== DARK THEME ===== */
+body.dark {
+    --glass-tint-1: rgba(40,35,65,0.42);
+    --glass-tint-2: rgba(45,40,75,0.58);
+    --glass-tint-3: rgba(50,45,85,0.72);
+    --glass-highlight: rgba(255,255,255,0.14);
+    --glass-border: rgba(255,255,255,0.14);
+    --glass-border-2: rgba(255,255,255,0.22);
+
+    --bg-base: #0e0a1e;
+    --bg-surface: var(--glass-tint-1);
+    --bg-surface-2: var(--glass-tint-2);
+    --bg-elevated: var(--glass-tint-3);
+
+    --text-primary: #f0f0fa;
+    --text-secondary: #a0a0be;   /* 7.6:1 */
+    --text-tertiary: #8a8ab0;    /* 5.9:1 — قبلاً #6b6b85 با 3.8:1 */
+
+    --up: var(--green-9);
+    --up-bg: rgba(48,164,108,0.20);
+    --down: var(--red-9);
+    --down-bg: rgba(229,72,77,0.20);
+    --flat: #8a8aa8;
+    --flat-bg: rgba(138,138,168,0.15);
+
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.30), 0 6px 20px rgba(0,0,0,0.40);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.35), 0 12px 36px rgba(0,0,0,0.45);
+    --shadow-lg: 0 8px 20px rgba(0,0,0,0.40), 0 20px 56px rgba(0,0,0,0.50);
+    --shadow-xl: 0 12px 32px rgba(0,0,0,0.45), 0 32px 88px rgba(0,0,0,0.55);
+    --shadow-2xl: 0 20px 48px rgba(0,0,0,0.50), 0 48px 120px rgba(0,0,0,0.60);
+}
+
+/* ===== PALETTES ===== */
+body[data-theme="aurora"] { --c1: rgba(190,160,255,0.55); --c2: rgba(255,175,210,0.50); --c3: rgba(170,205,255,0.45); --c4: rgba(170,240,220,0.45); --c5: rgba(255,215,175,0.50); --accent: var(--violet-9); --accent-glow: rgba(110,86,207,0.30); }
+body[data-theme="gold"] { --c1: rgba(255,215,140,0.60); --c2: rgba(255,180,90,0.50); --c3: rgba(255,230,180,0.45); --c4: rgba(250,200,120,0.45); --c5: rgba(255,240,200,0.50); --accent: #d97706; --accent-glow: rgba(217,119,6,0.35); }
+body[data-theme="ocean"] { --c1: rgba(140,200,255,0.60); --c2: rgba(120,230,235,0.50); --c3: rgba(160,220,255,0.45); --c4: rgba(140,245,220,0.45); --c5: rgba(180,220,255,0.50); --accent: #0891b2; --accent-glow: rgba(8,145,178,0.35); }
+body[data-theme="forest"] { --c1: rgba(160,235,180,0.60); --c2: rgba(140,235,200,0.50); --c3: rgba(180,245,200,0.45); --c4: rgba(200,245,170,0.45); --c5: rgba(160,240,210,0.50); --accent: #059669; --accent-glow: rgba(5,150,105,0.35); }
+body[data-theme="sunset"] { --c1: rgba(255,180,150,0.60); --c2: rgba(255,150,170,0.50); --c3: rgba(255,200,150,0.45); --c4: rgba(250,170,130,0.45); --c5: rgba(255,210,180,0.50); --accent: #ea580c; --accent-glow: rgba(234,88,12,0.35); }
+body[data-theme="neon"] { --c1: rgba(220,100,255,0.55); --c2: rgba(100,240,255,0.50); --c3: rgba(255,100,220,0.45); --c4: rgba(120,255,200,0.45); --c5: rgba(180,120,255,0.50); --accent: #d946ef; --accent-glow: rgba(217,70,239,0.40); }
+
+/* پالت‌هایی که در HTML سواچ داشتند ولی اینجا تعریف نشده بودند */
+body[data-theme="cyberpunk"] { --c1: rgba(255,235,120,0.62); --c2: rgba(120,215,255,0.55); --c3: rgba(255,120,200,0.45); --c4: rgba(150,255,235,0.45); --c5: rgba(255,200,120,0.50); --accent: #c026d3; --accent-glow: rgba(192,38,211,0.35); }
+body[data-theme="matrix"] { --c1: rgba(150,255,180,0.60); --c2: rgba(110,235,150,0.50); --c3: rgba(180,255,205,0.45); --c4: rgba(120,240,190,0.45); --c5: rgba(200,255,220,0.50); --accent: #15803d; --accent-glow: rgba(21,128,61,0.35); }
+body[data-theme="paper"] { --c1: rgba(230,222,205,0.70); --c2: rgba(240,232,216,0.60); --c3: rgba(222,214,198,0.50); --c4: rgba(238,232,222,0.50); --c5: rgba(226,216,200,0.55); --accent: #4d4a45; --accent-glow: rgba(77,74,69,0.30); }
+
+/* نسخه‌ی تاریک همین پالت‌ها (باید بعد از پالت‌های روشن بیاید) */
+body.dark[data-theme="cyberpunk"] { --c1: rgba(255,215,60,0.30); --c2: rgba(60,190,255,0.26); --c3: rgba(255,70,180,0.22); --c4: rgba(80,240,215,0.20); --c5: rgba(255,170,70,0.24); --accent: #e879f9; --accent-glow: rgba(232,121,249,0.40); }
+body.dark[data-theme="matrix"] { --c1: rgba(70,230,120,0.28); --c2: rgba(40,190,90,0.24); --c3: rgba(120,255,170,0.20); --c4: rgba(60,220,150,0.20); --c5: rgba(140,255,190,0.22); --accent: #34d399; --accent-glow: rgba(52,211,153,0.40); }
+body.dark[data-theme="paper"] {
+    --c1: rgba(210,196,170,0.22); --c2: rgba(190,180,165,0.20);
+    --c3: rgba(220,210,190,0.18); --c4: rgba(200,192,180,0.18); --c5: rgba(215,205,185,0.20);
+    --accent: #d6d3d1; --accent-glow: rgba(214,211,209,0.28);
+    --text-primary: #f4f2ee; --text-secondary: #c3bfb6; --text-tertiary: #a5a199;
+}
+
+/* =========================================================
+   ACCESSIBILITY — focus ring، کاهش حرکت، کنتراست بیشتر
+   ========================================================= */
+
+/* حلقه‌ی فوکوس فقط برای کاربر کیبورد (ماوس/لمس آن را نمی‌بیند) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+}
+:where(.modal, .cmd-modal) :focus-visible { outline-offset: 3px; }
+
+/* کاربرانی که انیمیشن کمتر می‌خواهند: همه‌ی مدت‌زمان‌ها نزدیک صفر و انیمیشن‌های تزئینی خاموش */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --dur-fast: 1ms;
+        --dur-normal: 1ms;
+        --dur-slow: 1ms;
+        --dur-slower: 1ms;
+    }
+    .topbar .logo, .statusbar .live::before, .ticker-track,
+    .fng-bar .fng-marker, .m-chart svg .dot-end, .star-btn.on,
+    .port-title, .alert-title, .conv-title, .m-chart-live-badge::before,
+    .pwa-install-btn, .conv-result-value, .port-item.triggered,
+    .modal.on, .cmd-modal.on, .lang-pop.on, .theme-pop.on {
+        animation: none !important;
+    }
+    .card, .news-card { filter: none !important; }
+    .card:hover, .news-card:hover, .card:active { transform: none !important; }
+}
+
+/* کنتراست بیشتر: متن‌های کم‌رنگ خوانا‌تر و لایه‌های شفاف متراکم‌تر می‌شوند */
+@media (prefers-contrast: more) {
+    :root {
+        --text-secondary: #3c3c52;
+        --text-tertiary: #4d4d66;
+        --glass-border: rgba(90,90,120,0.55);
+        --glass-tint-1: rgba(255,255,255,0.86);
+        --glass-tint-2: rgba(255,255,255,0.92);
+        --glass-tint-3: rgba(255,255,255,0.96);
+        --up-bg: rgba(48,164,108,0.24);
+        --down-bg: rgba(229,72,77,0.24);
+    }
+    body.dark {
+        --text-secondary: #c9c9de;
+        --text-tertiary: #b0b0c8;
+        --glass-border: rgba(255,255,255,0.34);
+        --glass-tint-1: rgba(30,26,50,0.86);
+        --glass-tint-2: rgba(34,30,56,0.92);
+        --glass-tint-3: rgba(38,34,62,0.96);
+    }
+    .c-foot, .news-time, .d-row { font-weight: var(--font-semibold); }
+}
+
+/* مرورگرهایی که backdrop-filter ندارند: سطوح مات‌تر تا متن خوانا بماند */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root {
+        --glass-tint-1: rgba(252,250,255,0.94);
+        --glass-tint-2: rgba(252,250,255,0.97);
+        --glass-tint-3: rgba(255,255,255,0.99);
+    }
+    body.dark {
+        --glass-tint-1: rgba(26,22,44,0.94);
+        --glass-tint-2: rgba(30,26,50,0.97);
+        --glass-tint-3: rgba(34,30,56,0.99);
+    }
+}
+
+/* موبایل: بلورهای سنگین ارزان‌تر می‌شوند (هر backdrop-filter یعنی یک لایه‌ی گرافیکی) */
+@media (max-width: 700px) {
+    :root {
+        --blur-sm: 6px;
+        --blur-md: 8px;
+        --blur-lg: 12px;
+        --blur-xl: 14px;
+        --blur-2xl: 16px;
+        --saturate-high: 140%;
+        --saturate-max: 150%;
+    }
+}
+
+/* موبایلِ کم‌توان: بدون بلور پس‌زمینه هم قابل استفاده بماند */
+@media (max-width: 700px) and (max-height: 700px), (update: slow) {
+    :root {
+        --blur-sm: 0px;
+        --blur-md: 0px;
+        --blur-lg: 0px;
+        --blur-xl: 0px;
+        --blur-2xl: 0px;
+    }
+}
+
+/* اسکرول‌بار نازک و هماهنگ با تم */
+* { scrollbar-width: thin; scrollbar-color: var(--gray-8) transparent; }
+body.dark * { scrollbar-color: rgba(255,255,255,0.22) transparent; }

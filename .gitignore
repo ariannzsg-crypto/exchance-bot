@@ -1,0 +1,23 @@
+# Secrets — هرگز کامیت نشوند
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+*.db
+
+# Vercel / tooling
+.vercel
+.vscode/
+.idea/
+.DS_Store
+*.log
+node_modules/
+
+# نسخه‌های اولیه‌ی پراکنده (از چت دیپ‌سیک) — خارج از ریپو می‌مانند
+deepseek_*

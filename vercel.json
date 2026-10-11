@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "web",
+  "rewrites": [
+    { "source": "/api/ai-chat", "destination": "/api/ai_chat" },
+    { "source": "/api/fear-greed", "destination": "/api/fear_greed" }
+  ],
+  "cleanUrls": true,
+  "functions": {
+    "api/ai_chat.py": { "maxDuration": 60 },
+    "api/market.py": { "maxDuration": 30 },
+    "api/history.py": { "maxDuration": 30 },
+    "api/news.py": { "maxDuration": 30 },
+    "api/chart.py": { "maxDuration": 30 },
+    "api/fear_greed.py": { "maxDuration": 15 }
+  }
+}
