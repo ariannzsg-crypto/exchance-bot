@@ -1,10 +1,12 @@
 name: Android APK
 
-# با هر push روی main و هر بار به‌صورت دستی، APK دیباگ ساخته و برای دانلود
-# در صفحه‌ی Actions همان اجرا (بخش Artifacts) گذاشته می‌شود.
+# دو حالت:
+#   • push روی main (یا اجرای دستی) → APK ساخته می‌شود و به‌عنوان Artifact می‌ماند
+#   • push تگ نسخه (مثل v1.0.0)      → همان APK به Release همان نسخه پیوست می‌شود
 on:
   push:
     branches: [main]
+    tags: ["v*"]
     paths:
       - "web/**"
       - "android/**"
@@ -16,7 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write      # لازم برای ساخت Release و پیوست کردن APK
 
 jobs:
   build-apk:
@@ -61,14 +63,44 @@ jobs:
 
       - name: Build debug APK
         working-directory: android
+        env:
+          # نام تگ، نسخه‌ی داخل اپ را تعیین می‌کند (v1.0.0 → 1.0.0)
+          APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: exchance-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30
+
+      # نام فایل پیوست‌شده به Release، نسخه‌دار می‌شود: exchance-1.0.0-debug.apk
+      - name: Name the release asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "exchance-${VERSION}-debug.apk"
+          echo "RELEASE_ASSET=exchance-${VERSION}-debug.apk" >> "$GITHUB_ENV"
+          echo "RELEASE_TITLE=EXCHANCE ${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_TITLE }}
+          files: ${{ env.RELEASE_ASSET }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          body: |
+            نسخه‌ی اندروید EXCHANCE — داشبورد قیمت ارز، طلا و رمزارز.
+
+            نصب: فایل APK زیر را دانلود کن و روی گوشی باز کن
+            (اجازه‌ی «نصب از منابع نامعلوم» را برای مرورگر بده).
+
+            این APK با کلید دیباگ امضا شده و برای نصب دستی مناسب است؛
+            برای انتشار در گوگل‌پلی باید با کلید خودت امضا شود.

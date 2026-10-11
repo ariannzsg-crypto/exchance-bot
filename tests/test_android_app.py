@@ -167,6 +167,45 @@ def test_workflow_can_actually_install_and_sync():
     assert package["devDependencies"]["@capacitor/cli"]
 
 
+def test_tag_push_publishes_a_github_release(workflow):
+    raw = WORKFLOW.read_text(encoding="utf-8")
+    assert 'tags: ["v*"]' in raw, "تگ نسخه باید workflow را اجرا کند"
+    assert workflow["permissions"]["contents"] == "write", "ساخت Release نیاز به دسترسی نوشتن دارد"
+
+    steps = workflow["jobs"]["build-apk"]["steps"]
+    release = next(s for s in steps if s.get("uses", "").startswith("softprops/action-gh-release"))
+    assert release["with"]["fail_on_unmatched_files"] is True
+    assert "RELEASE_ASSET" in release["with"]["files"]
+    assert release["with"]["generate_release_notes"] is True
+    # فقط روی تگ اجرا شود، نه روی هر push به main
+    assert release["if"] == "startsWith(github.ref, 'refs/tags/v')"
+
+
+def test_release_asset_is_built_from_the_apk_gradle_just_made(workflow):
+    steps = workflow["jobs"]["build-apk"]["steps"]
+    namer = next(s for s in steps if s.get("name") == "Name the release asset")
+    assert "${GITHUB_REF_NAME#v}" in namer["run"], "نسخه باید از نام تگ بیاید"
+    assert "android/app/build/outputs/apk/debug/app-debug.apk" in namer["run"]
+    assert "RELEASE_ASSET=" in namer["run"] and "GITHUB_ENV" in namer["run"]
+    assert namer["if"] == "startsWith(github.ref, 'refs/tags/v')"
+
+
+def test_release_tag_drives_the_in_app_version():
+    gradle = (ANDROID / "app" / "build.gradle").read_text(encoding="utf-8")
+    assert 'System.getenv("APP_VERSION") ?: "1.0"' in gradle
+
+    build = next(s for s in yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))["jobs"]
+                 ["build-apk"]["steps"] if "assembleDebug" in (s.get("run") or ""))
+    assert "github.ref_name" in build["env"]["APP_VERSION"]
+
+
+def test_release_apk_path_matches_what_gradle_writes(workflow):
+    # مسیر artifact و مسیر پیوست Release باید همان خروجی گریدل باشند
+    steps = workflow["jobs"]["build-apk"]["steps"]
+    artifact = next(s for s in steps if s.get("uses", "").startswith("actions/upload-artifact"))
+    assert artifact["with"]["path"] == "android/app/build/outputs/apk/debug/*.apk"
+
+
 def test_workflow_paths_filter_matches_real_directories(workflow):
     # روی push، فیلتر مسیرها باید پوشه‌های واقعی را نام ببرد
     raw = WORKFLOW.read_text(encoding="utf-8")
