@@ -13,6 +13,10 @@
     ⚠ سرویس روی هر کلید هم‌زمانی محدودی دارد (خطای 429) و درخواست قطع‌شده را تا انتها
     پردازش می‌کند؛ پس زنجیره‌ی فالبک فقط وقتی جواب می‌دهد که تلاش اول خیلی زود خطا بدهد.
 
+    ⚠ اگر کلید هم‌زمان جای دیگری هم استفاده شود، دروازه‌ی سرویس خطای 503 با متن
+    «The request queue is temporarily full» می‌دهد. این خطا موقتی است، پس مثل 429
+    یک بار کوتاه صبر می‌کنیم و دوباره می‌زنیم و پیام شفاف‌تری به کاربر می‌دهیم.
+
 همه‌ی کلیدها فقط از متغیرهای محیطی خوانده می‌شوند و هیچ کلیدی در کد نیست:
 
     AI_API_KEY            (اجباری برای سرویس اصلی)
@@ -189,7 +193,7 @@ def ai_chat(message: str, history=None, lang: str = "fa", market_ctx: str = "") 
             except Exception as exc:  # noqa: BLE001 - برای برگرداندن پیام مناسب به کاربر
                 errors.append(f"{model}: {str(exc)[:80]}")
                 # سرویس سقف هم‌زمانی دارد («Try again shortly»)؛ یک بار کوتاه صبر و دوباره می‌زنیم
-                if getattr(exc, "status", 0) == 429 and attempt == 1:
+                if getattr(exc, "status", 0) in (429, 503) and attempt == 1:
                     pause = min(6.0, max(0.0, AI_TOTAL_BUDGET - (time.time() - started) - 12))
                     if pause >= 2:
                         time.sleep(pause)
@@ -207,12 +211,15 @@ def ai_chat(message: str, history=None, lang: str = "fa", market_ctx: str = "") 
             errors.append(f"gemini: {str(exc)[:80]}")
 
     slow = (time.time() - started) >= AI_TOTAL_BUDGET - 2
+    overloaded = any("queue is temporarily full" in err or "503" in err for err in errors)
+    if slow:
+        message = "⏱ پاسخ مدل طول کشید و نیمه‌کاره ماند. یک بار دیگر بپرس."
+    elif overloaded:
+        message = "🚦 سرویس هوش مصنوعی همین حالا شلوغ است. چند لحظه بعد دوباره بپرس."
+    else:
+        message = "❌ سرویس هوش مصنوعی پاسخ نداد."
     return {
         "success": False,
-        "message": (
-            "⏱ پاسخ مدل طول کشید و نیمه‌کاره ماند. یک بار دیگر بپرس."
-            if slow
-            else "❌ سرویس هوش مصنوعی پاسخ نداد."
-        ),
+        "message": message,
         "debug": " | ".join(errors[-2:]),
     }
