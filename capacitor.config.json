@@ -1,0 +1,12 @@
+{
+  "appId": "com.exchance.app",
+  "appName": "EXCHANCE",
+  "webDir": "web",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#f8f5ff"
+  }
+}

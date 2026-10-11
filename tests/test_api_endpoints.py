@@ -293,69 +293,6 @@ def test_chart_returns_404_for_unknown_symbol(monkeypatch):
     assert resp.status == 404
 
 
-# --- /api/ai_chat ---------------------------------------------------------------
-
-
-def test_ai_chat_passes_market_context_to_the_model(monkeypatch):
-    import api.ai_chat as chat_api
-
-    captured = {}
-
-    def fake_ai_chat(message, history=None, lang="fa", market_ctx=""):
-        captured.update(message=message, history=history, lang=lang, market_ctx=market_ctx)
-        return {"success": True, "reply": "دلار ۲۶۴٬۳۰۵ تومان است", "ai_powered": True}
-
-    monkeypatch.setattr(chat_api, "ai_chat", fake_ai_chat)
-    monkeypatch.setattr(chat_api, "get_market", lambda: {
-        "usd": {"name": "دلار آمریکا", "price": 264305.0},
-        "btc": {"name": "بیت‌کوین", "price": 2.2e10},
-    })
-
-    with serve("api.ai_chat") as base:
-        resp = request(base + "/api/ai_chat", method="POST",
-                       payload={"message": "قیمت دلار؟", "lang": "fa"})
-
-    assert resp.status == 200
-    assert resp.json()["reply"].startswith("دلار")
-    assert captured["message"] == "قیمت دلار؟"
-    assert "دلار آمریکا: 264,305 تومان" in captured["market_ctx"]
-    assert "بیت‌کوین" in captured["market_ctx"]
-
-
-def test_ai_chat_rejects_an_empty_message(monkeypatch):
-    import api.ai_chat as chat_api
-
-    monkeypatch.setattr(chat_api, "get_market", lambda: {})
-
-    with serve("api.ai_chat") as base:
-        resp = request(base + "/api/ai_chat", method="POST", payload={"message": "   "})
-
-    assert resp.status == 400
-
-
-def test_ai_chat_maps_provider_failure_to_500(monkeypatch):
-    import api.ai_chat as chat_api
-
-    monkeypatch.setattr(chat_api, "get_market", lambda: {})
-    monkeypatch.setattr(chat_api, "ai_chat", lambda **k: {"success": False,
-                                                          "message": "شلوغ است"})
-
-    with serve("api.ai_chat") as base:
-        resp = request(base + "/api/ai_chat", method="POST", payload={"message": "سلام"})
-
-    assert resp.status == 500
-    assert resp.json()["message"] == "شلوغ است"
-
-
-def test_ai_chat_preflight_allows_browser_calls(monkeypatch):
-    with serve("api.ai_chat") as base:
-        resp = request(base + "/api/ai_chat", method="OPTIONS")
-
-    assert resp.status == 200
-    assert resp.headers["Access-Control-Allow-Origin"] == "*"
-    assert "POST" in resp.headers["Access-Control-Allow-Methods"]
-
-
 # --- قرارداد استقرار روی ورسل ----------------------------------------------------
 
 
@@ -370,7 +307,7 @@ def test_vercel_config_points_at_real_files():
     for path in config["functions"]:
         assert (ROOT / path).is_file(), f"فانکشن اعلام‌شده وجود ندارد: {path}"
 
-    # مقصد rewrite یک «مسیر» است نه مسیر فایل: /api/ai_chat → api/ai_chat.py
+    # مقصد rewrite یک «مسیر» است نه مسیر فایل: /api/fear-greed → api/fear_greed.py
     for rule in config["rewrites"]:
         name = rule["destination"].strip("/").split("/")[-1]
         assert (ROOT / "api" / f"{name}.py").is_file(), \

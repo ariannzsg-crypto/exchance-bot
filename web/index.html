@@ -116,8 +116,6 @@ body.dark .topbar .ibtn { background: rgba(255,255,255,0.10); }
 .topbar .ibtn:hover { transform: scale(1.10); box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-highlight); }
 .topbar .ibtn:active { transform: scale(0.92); }
 .topbar .theme:hover { transform: rotate(20deg) scale(1.05); }
-.topbar .ai-btn { background: linear-gradient(135deg, var(--accent), var(--pink-9)); color: #fff; border-color: transparent; box-shadow: var(--shadow-glow-accent), inset 0 1px 0 rgba(255,255,255,0.3); }
-.topbar .ai-btn:hover { box-shadow: 0 8px 28px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.4); }
 
 .lang-pop, .theme-pop {
     position: absolute; top: 48px; padding: var(--space-3);
@@ -597,37 +595,6 @@ body.dark .port-item { background: rgba(255,255,255,0.07); }
 @keyframes alertPulse { 0%, 100% { background: rgba(255,255,255,0.42); } 50% { background: var(--up-bg); } }
 .port-item.triggered { animation: alertPulse 1.8s infinite; }
 
-/* ============ AI ============ */
-.ai-panel { max-width: 560px; padding: 0; display: flex; flex-direction: column; max-height: 90vh; }
-.ai-head { padding: 20px 22px 16px; border-bottom: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; gap: var(--space-3); padding-right: 56px; }
-.ai-head .ai-icon { width: 44px; height: 44px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--violet-9), var(--pink-9)); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 8px 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.3); flex-shrink: 0; }
-.ai-head-text { flex: 1; min-width: 0; }
-.ai-head-text .nm { font-size: var(--text-base); font-weight: var(--font-extrabold); }
-.ai-head-text .sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; font-weight: var(--font-medium); }
-.ai-msgs { flex: 1; padding: 18px 22px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-3); min-height: 200px; max-height: 55vh; }
-.ai-msg { max-width: 85%; padding: 12px 16px; border-radius: var(--radius-xl); font-size: 13.5px; line-height: 1.7; word-wrap: break-word; white-space: pre-wrap; animation: msgIn var(--dur-slow) var(--ease-spring); font-weight: var(--font-medium); }
-@keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.ai-msg.user { align-self: flex-start; background: linear-gradient(135deg, var(--accent), var(--pink-9)); color: #fff; border-bottom-left-radius: 8px; box-shadow: 0 6px 20px var(--accent-glow); }
-.ai-msg.bot { align-self: flex-end; background: rgba(255,255,255,0.55); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-highlight); border-bottom-right-radius: 8px; }
-body.dark .ai-msg.bot { background: rgba(255,255,255,0.10); }
-.ai-msg.bot.error { background: var(--down-bg); border-color: rgba(229,72,77,0.3); color: var(--down); }
-.ai-msg.typing { display: flex; align-items: center; gap: 5px; padding: 14px 18px; }
-.ai-msg.typing span { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--text-secondary); animation: typing 1.4s infinite; }
-.ai-msg.typing span:nth-child(2) { animation-delay: 0.2s; }
-.ai-msg.typing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
-.ai-quick { padding: 12px 18px 8px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.3); }
-.ai-quick button { padding: 8px 14px; border-radius: var(--radius-full); background: rgba(255,255,255,0.45); border: 1px solid var(--glass-border); font-size: 12px; font-weight: var(--font-semibold); color: var(--text-secondary); transition: all var(--dur-normal) var(--ease-spring); }
-body.dark .ai-quick button { background: rgba(255,255,255,0.08); }
-.ai-quick button:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 16px var(--accent-glow); }
-.ai-input-row { padding: 12px 18px 18px; display: flex; gap: var(--space-2); align-items: flex-end; border-top: 1px solid rgba(255,255,255,0.3); }
-.ai-input { flex: 1; min-height: 48px; max-height: 110px; padding: 13px 18px; border-radius: var(--radius-xl); background: rgba(255,255,255,0.55); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-highlight); color: var(--text-primary); font-size: 13.5px; line-height: 1.5; resize: none; overflow-y: auto; font-family: inherit; transition: all var(--dur-normal) var(--ease-out); }
-body.dark .ai-input { background: rgba(255,255,255,0.10); }
-.ai-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow), inset 0 1px 0 var(--glass-highlight); }
-.ai-send { flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--accent), var(--pink-9)); color: #fff; font-size: 19px; box-shadow: 0 6px 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.3); transition: all var(--dur-normal) var(--ease-spring); }
-.ai-send:hover:not(:disabled) { transform: scale(1.08); }
-.ai-send:active { transform: scale(0.92); }
-.ai-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ============ ERROR / LOADING / EMPTY ============ */
 .err { display: none; padding: var(--space-4); margin-bottom: var(--space-3); border-radius: var(--radius-xl); background: var(--down-bg); border: 1px solid rgba(229,72,77,0.3); text-align: center; }
@@ -716,8 +683,6 @@ body.dark .conv-quick button { background: rgba(255,255,255,0.08); }
     .news-thumb, .news-thumb-placeholder { height: 180px; }
     .news-title { font-size: 13.5px; }
     .tab { font-size: 11.5px; padding: 10px 8px; }
-    .ai-panel { max-height: 95vh; }
-    .ai-msgs { max-height: 60vh; }
     .topbar { flex-wrap: wrap; padding: 10px 14px; gap: 8px; border-radius: var(--radius-xl); }
     .topbar .logo { order: 1; flex: 1; font-size: 13px; }
     .clock { order: 2; padding: 5px 10px; font-size: 11px; margin-inline-start: auto; }
@@ -804,7 +769,7 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
 @media (hover: none) {
     .card:hover, .card:active, .news-card:hover, .movers-card:hover,
     .vol-item:hover, .mover-row:hover, .qa-btn:hover, .foot .lnk:hover,
-    .conv-quick button:hover, .m-action-btn:hover, .ai-quick button:hover,
+    .conv-quick button:hover, .m-action-btn:hover, 
     .lang-pop button:hover, .star-btn:hover, .swatch:hover, .clock:hover,
     .statusbar .rbtn:hover, .topbar .ibtn:hover, .set-btn-secondary:hover,
     .conv-swap:hover, .port-item .del:hover {
@@ -842,7 +807,7 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     .ticker-track { will-change: transform; }
     .news-card { content-visibility: auto; contain-intrinsic-size: auto 320px; }
     /* فونت ۱۶px تا iOS هنگام فوکوس خودکار زوم نکند */
-    .search input, .ai-input, .port-add input, .port-add select,
+    .search input, .port-add input, .port-add select,
     .alert-add input, .alert-add select, .gold-field input, .gold-field select { font-size: 16px; }
 }
 
@@ -886,11 +851,10 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
 }
 
 .modal-panel { max-height: calc(100dvh - 16px - var(--safe-top)); overscroll-behavior: contain; }
-.ai-msgs, .port-list, .cmd-results { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.port-list, .cmd-results { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 @media (max-width: 640px) {
     .modal { align-items: flex-end; }
     .modal-panel { margin-bottom: calc(var(--space-2) + var(--safe-bottom)); }
-    .ai-msgs { max-height: 44dvh; }
     .m-chart { height: 168px; }
 }
 
@@ -900,7 +864,6 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     .m-chart { height: 130px; }
     .m-timeframes { margin-bottom: var(--space-2); }
     .modal-panel { max-height: 94dvh; padding: var(--space-3); }
-    .ai-msgs { max-height: 32dvh; }
 }
 
 /* حرکت کم: اسکرول نرم هم خاموش شود */
@@ -936,7 +899,6 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
         <div class="actions">
             <button id="cmdBtn" class="ibtn" type="button" title="Command Palette (Ctrl+K)" data-i18n-aria="navCmd">⌘</button>
             <button id="langBtn" class="ibtn" type="button" title="Language" aria-haspopup="true" aria-expanded="false" data-i18n-aria="navLang">🌐</button>
-            <button id="aiBtn" class="ibtn ai-btn" type="button" title="AI" data-i18n-aria="navAi">🤖</button>
             <button id="portfolioBtn" class="ibtn" type="button" title="Portfolio" data-i18n-aria="navPortfolio">💼</button>
             <button id="alertsBtn" class="ibtn" type="button" title="Alerts" data-i18n-aria="navAlerts">🔔</button>
             <button id="convBtn" class="ibtn" type="button" title="Convert" data-i18n-aria="navConvert">💱</button>
@@ -1205,32 +1167,6 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     </div>
 </div>
 
-<!-- AI MODAL -->
-<div id="aiModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="aiTitle" aria-hidden="true">
-    <div class="modal-bg" data-close-ai="1"></div>
-    <div class="modal-panel ai-panel">
-        <div class="ai-head">
-            <button class="modal-close" id="aiClose" type="button" data-i18n-aria="closeDialog">✕</button>
-            <div class="ai-icon" aria-hidden="true">🤖</div>
-            <div class="ai-head-text">
-                <div class="nm" id="aiTitle" data-i18n="aiTitle">دستیار هوشمند EXCHANCE</div>
-                <div class="sub" data-i18n="aiSub">درباره بازار ارز و رمزارز بپرس</div>
-            </div>
-        </div>
-        <div class="ai-msgs" id="aiMsgs"></div>
-        <div class="ai-quick" id="aiQuick">
-            <button data-q="قیمت دلار چنده؟" data-i18n="qUsd">💵 دلار</button>
-            <button data-q="طلا ۱۸ عیار چنده؟" data-i18n="qGold">🥇 طلا</button>
-            <button data-q="تحلیل کوتاه بازار رمزارز" data-i18n="qAnalysis">📊 تحلیل</button>
-            <button data-q="BTC چنده؟" data-i18n="qBtc">₿ BTC</button>
-        </div>
-        <div class="ai-input-row">
-            <textarea id="aiInput" class="ai-input" rows="1" data-i18n-placeholder="aiPh" data-i18n-aria="aiPh" placeholder="سوالت رو بنویس..."></textarea>
-            <button id="aiSend" class="ai-send" type="button" data-i18n-aria="sendAction">➤</button>
-        </div>
-    </div>
-</div>
-
 <!-- CONVERTER MODAL -->
 <div id="convModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="convTitle" aria-hidden="true">
     <div class="modal-bg" data-close-conv="1"></div>
@@ -1305,6 +1241,7 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
 
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="false"></div>
 
-<script src="/app.js?v=80"></script>
+<script src="/config.js?v=1"></script>
+<script src="/app.js?v=81"></script>
 </body>
 </html>

@@ -1,0 +1,23 @@
+{
+  "name": "exchance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EXCHANCE — داشبورد قیمت ارز، طلا و رمزارز، بسته‌بندی‌شده به‌صورت اپ اندروید",
+  "scripts": {
+    "android:sync": "cap sync android",
+    "android:build": "cap sync android && cd android && gradlew.bat assembleDebug",
+    "android:release": "cap sync android && cd android && gradlew.bat assembleRelease",
+    "android:open": "cap open android",
+    "android:assets": "capacitor-assets generate --android",
+    "serve:web": "python _preview/devserver.py"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3",
+    "js-yaml": "^4.1.0"
+  }
+}

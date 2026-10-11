@@ -3,7 +3,6 @@
      • فایل‌های استاتیک: cache-first (نسخه‌دار)
      • /api/market و /api/news و /api/history: network-first با فالبک به آخرین پاسخ کش‌شده
        (برای نمایش آخرین قیمت‌ها در حالت آفلاین)
-     • /api/ai_chat: هرگز کش نمی‌شود
 */
 const VERSION = "ex-v1";
 const STATIC_CACHE = `${VERSION}-static`;
@@ -12,6 +11,7 @@ const API_CACHE = `${VERSION}-api`;
 const STATIC_ASSETS = [
   "/",
   "/index.html",
+  "/config.js",
   "/app.js",
   "/design-tokens.css",
   "/manifest.json",
@@ -40,12 +40,6 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-
-  // هیچ‌وقت چت AI را کش نکن
-  if (url.pathname.startsWith("/api/ai_chat")) {
-    event.respondWith(fetch(request));
-    return;
-  }
 
   if (CACHEABLE_API.some((p) => url.pathname.startsWith(p))) {
     event.respondWith(

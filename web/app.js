@@ -26,9 +26,10 @@ const convSwap = $("convSwap"), convValue = $("convValue"), convRate = $("convRa
 const newsSection = $("newsSection"), newsGrid = $("newsGrid");
 const newsChips = document.querySelectorAll(".news-chip");
 
-const aiBtn = $("aiBtn"), aiModal = $("aiModal"), aiClose = $("aiClose");
-const aiMsgs = $("aiMsgs"), aiInput = $("aiInput"), aiSend = $("aiSend");
-const aiQuick = $("aiQuick");
+/* پایهٔ آدرس API: در وب خالی است (همان مبدأ) و در اپ اندروید از config.js می‌آید */
+const API_BASE = (window.API_BASE || "").replace(/\/+$/, "");
+const api = (path) => API_BASE + path;
+
 
 const langBtn = $("langBtn"), langPop = $("langPop");
 const settingsBtn = $("settingsBtn");
@@ -77,8 +78,6 @@ let newsLoaded = false;
 let newsLang = "all";
 let newsRevealObserver = null;
 
-let aiHistory = [];
-let aiBusy = false;
 
 let pollTimer = null;
 let wsConnected = false;
@@ -277,9 +276,6 @@ const I18N = {
         portfolioTitle: "💼 پورتفولیو", totalValue: "ارزش کل", totalPnl: "سود/ضرر",
         amountPh: "مقدار", buyPh: "قیمت خرید", pricePh: "قیمت",
         alertsTitle: "🔔 هشدار قیمت", dirAbove: "بالاتر از", dirBelow: "پایین‌تر از",
-        aiTitle: "دستیار هوشمند EXCHANCE", aiSub: "درباره بازار ارز و رمزارز بپرس",
-        qUsd: "💵 دلار", qGold: "🥇 طلا", qAnalysis: "📊 تحلیل", qBtc: "₿ BTC",
-        aiPh: "سوالت رو بنویس...",
         convTitle: "💱 تبدیل ارز", convAmount: "مبلغ", convFrom: "از", convTo: "به", convResult: "نتیجه",
         convCurrency: "💱 ارز", convGold: "🥇 طلا",
         goldAmount: "مقدار", goldUnit: "واحد", goldKarat: "عیار", goldTarget: "تبدیل به", goldResult: "نتیجه",
@@ -290,8 +286,6 @@ const I18N = {
         fiatLabel: "ارز و طلا", cryptoLabel: "رمزارز",
         agoNow: "همین حالا", agoMin: "دقیقه پیش", agoHour: "ساعت پیش", agoDay: "روز پیش",
         portEmpty: "هنوز دارایی‌ای اضافه نکردی", alertEmpty: "هنوز هشداری تنظیم نکردی",
-        aiGreeting: "👋 سلام! من دستیار هوشمند EXCHANCE هستم.\n\nدرباره قیمت ارز، طلا یا رمزارز بپرس.",
-        aiError: "❌ خطا در پاسخ‌گویی.", aiNetError: "❌ اتصال به سرور برقرار نشد",
         fngLabel: "شاخص ترس و طمع", pwaInstall: "نصب روی گوشی",
         tf1d: "۱ روز", tf7d: "۷ روز", tf30d: "۳۰ روز", tf90d: "۹۰ روز", tf1y: "۱ سال",
         share: "اشتراک‌گذاری",
@@ -310,13 +304,12 @@ const I18N = {
         toastAlertTriggered: "🔔 هشدار فعال شد!",
         alertTriggered: "هشدار فعال شد!",
         todayHigh: "سقف ۲۴h", todayLow: "کف ۲۴h",
-        navCmd: "پالت دستورات", navLang: "تغییر زبان", navAi: "دستیار هوشمند",
-        navPortfolio: "پورتفولیو", navAlerts: "هشدارهای قیمت", navConvert: "تبدیل ارز",
+        navCmd: "پالت دستورات", navLang: "تغییر زبان",         navPortfolio: "پورتفولیو", navAlerts: "هشدارهای قیمت", navConvert: "تبدیل ارز",
         navThemes: "رنگ‌بندی‌ها", navSettings: "تنظیمات", navTheme: "تغییر تم روشن/تاریک",
         searchLabel: "جستجو در ارزها، طلا و رمزارز", clearSearch: "پاک کردن جستجو",
         filterGroup: "فیلتر دسته‌بندی", tabWatchAria: "علاقه‌مندی‌ها", newsFilterGroup: "فیلتر زبان خبر",
         refreshNow: "بروزرسانی قیمت‌ها", closeDialog: "بستن", chooseCurrency: "انتخاب ارز",
-        addAction: "افزودن", sendAction: "ارسال", swapAction: "جابجایی دو طرف", direction: "جهت هشدار",
+        addAction: "افزودن", swapAction: "جابجایی دو طرف", direction: "جهت هشدار",
         priceChart: "نمودار قیمت", compareChart: "مقایسه", watchItem: "افزودن/حذف از علاقه‌مندی‌ها",
         themeGroup: "انتخاب رنگ‌بندی", langGroup: "انتخاب زبان", cmdTitle: "پالت دستورات",
         cmpAction: "📊 مقایسه", alertAction: "🔔 هشدار",
@@ -336,9 +329,6 @@ const I18N = {
         portfolioTitle: "💼 Portfolio", totalValue: "Total Value", totalPnl: "P&L",
         amountPh: "Amount", buyPh: "Buy Price", pricePh: "Price",
         alertsTitle: "🔔 Price Alerts", dirAbove: "Above", dirBelow: "Below",
-        aiTitle: "EXCHANCE AI Assistant", aiSub: "Ask about forex and crypto",
-        qUsd: "💵 USD", qGold: "🥇 Gold", qAnalysis: "📊 Analysis", qBtc: "₿ BTC",
-        aiPh: "Type your question...",
         convTitle: "💱 Currency Converter", convAmount: "Amount", convFrom: "From", convTo: "To", convResult: "Result",
         convCurrency: "💱 Currency", convGold: "🥇 Gold",
         goldAmount: "Amount", goldUnit: "Unit", goldKarat: "Karat", goldTarget: "Convert to", goldResult: "Result",
@@ -349,8 +339,6 @@ const I18N = {
         fiatLabel: "Currency", cryptoLabel: "Crypto",
         agoNow: "Just now", agoMin: "min ago", agoHour: "hr ago", agoDay: "d ago",
         portEmpty: "No assets added yet", alertEmpty: "No alerts set yet",
-        aiGreeting: "👋 Hi! Ask about forex, gold or crypto.",
-        aiError: "❌ Failed to get response.", aiNetError: "❌ Connection failed",
         fngLabel: "Fear & Greed Index", pwaInstall: "Install app",
         tf1d: "1D", tf7d: "7D", tf30d: "30D", tf90d: "90D", tf1y: "1Y",
         share: "Share",
@@ -369,13 +357,12 @@ const I18N = {
         toastAlertTriggered: "🔔 Alert triggered!",
         alertTriggered: "Alert triggered!",
         todayHigh: "24h High", todayLow: "24h Low",
-        navCmd: "Command palette", navLang: "Change language", navAi: "AI assistant",
-        navPortfolio: "Portfolio", navAlerts: "Price alerts", navConvert: "Currency converter",
+        navCmd: "Command palette", navLang: "Change language",         navPortfolio: "Portfolio", navAlerts: "Price alerts", navConvert: "Currency converter",
         navThemes: "Color palettes", navSettings: "Settings", navTheme: "Switch light/dark theme",
         searchLabel: "Search currencies, gold and crypto", clearSearch: "Clear search",
         filterGroup: "Category filter", tabWatchAria: "Watchlist", newsFilterGroup: "News language filter",
         refreshNow: "Refresh prices", closeDialog: "Close", chooseCurrency: "Choose currency",
-        addAction: "Add", sendAction: "Send", swapAction: "Swap sides", direction: "Alert direction",
+        addAction: "Add", swapAction: "Swap sides", direction: "Alert direction",
         priceChart: "Price chart", compareChart: "Compare", watchItem: "Add or remove from watchlist",
         themeGroup: "Choose palette", langGroup: "Choose language", cmdTitle: "Command palette",
         cmpAction: "📊 Compare", alertAction: "🔔 Alert",
@@ -395,9 +382,6 @@ const I18N = {
         portfolioTitle: "💼 المحفظة", totalValue: "القيمة الإجمالية", totalPnl: "الربح/الخسارة",
         amountPh: "الكمية", buyPh: "سعر الشراء", pricePh: "السعر",
         alertsTitle: "🔔 تنبيهات الأسعار", dirAbove: "أعلى من", dirBelow: "أقل من",
-        aiTitle: "مساعد EXCHANCE الذكي", aiSub: "اسأل عن الفوركس والعملات الرقمية",
-        qUsd: "💵 دولار", qGold: "🥇 ذهب", qAnalysis: "📊 تحليل", qBtc: "₿ BTC",
-        aiPh: "اكتب سؤالك...",
         convTitle: "💱 محول العملات", convAmount: "المبلغ", convFrom: "من", convTo: "إلى", convResult: "النتيجة",
         convCurrency: "💱 عملات", convGold: "🥇 ذهب",
         goldAmount: "الكمية", goldUnit: "الوحدة", goldKarat: "العيار", goldTarget: "تحويل إلى", goldResult: "النتيجة",
@@ -408,8 +392,6 @@ const I18N = {
         fiatLabel: "العملات", cryptoLabel: "العملات الرقمية",
         agoNow: "الآن", agoMin: "دقيقة", agoHour: "ساعة", agoDay: "يوم",
         portEmpty: "لم تضف أصولاً بعد", alertEmpty: "لم تضبط تنبيهات بعد",
-        aiGreeting: "👋 مرحباً! اسأل عن الأسعار.",
-        aiError: "❌ خطأ في الرد.", aiNetError: "❌ تعذر الاتصال",
         fngLabel: "مؤشر الخوف والجشع", pwaInstall: "ثبّت التطبيق",
         tf1d: "يوم", tf7d: "أسبوع", tf30d: "شهر", tf90d: "٩٠ يوم", tf1y: "سنة",
         share: "مشاركة",
@@ -428,13 +410,12 @@ const I18N = {
         toastAlertTriggered: "🔔 تم تفعيل التنبيه!",
         alertTriggered: "تم تفعيل التنبيه!",
         todayHigh: "أعلى ٢٤س", todayLow: "أدنى ٢٤س",
-        navCmd: "لوحة الأوامر", navLang: "تغيير اللغة", navAi: "المساعد الذكي",
-        navPortfolio: "المحفظة", navAlerts: "تنبيهات الأسعار", navConvert: "محول العملات",
+        navCmd: "لوحة الأوامر", navLang: "تغيير اللغة",         navPortfolio: "المحفظة", navAlerts: "تنبيهات الأسعار", navConvert: "محول العملات",
         navThemes: "الألوان", navSettings: "الإعدادات", navTheme: "تبديل الوضع الفاتح/الداكن",
         searchLabel: "ابحث في العملات والذهب والعملات الرقمية", clearSearch: "مسح البحث",
         filterGroup: "تصفية الفئات", tabWatchAria: "المفضلة", newsFilterGroup: "تصفية لغة الأخبار",
         refreshNow: "تحديث الأسعار", closeDialog: "إغلاق", chooseCurrency: "اختر العملة",
-        addAction: "إضافة", sendAction: "إرسال", swapAction: "تبديل الطرفين", direction: "اتجاه التنبيه",
+        addAction: "إضافة", swapAction: "تبديل الطرفين", direction: "اتجاه التنبيه",
         priceChart: "مخطط السعر", compareChart: "مقارنة", watchItem: "إضافة أو إزالة من المفضلة",
         themeGroup: "اختر النمط", langGroup: "اختر اللغة", cmdTitle: "لوحة الأوامر",
         cmpAction: "📊 مقارنة", alertAction: "🔔 تنبيه",
@@ -492,7 +473,7 @@ function fngLabelOf(cls) {
 
 async function loadFearGreed() {
     try {
-        const res = await fetch("/api/fear_greed?_=" + Date.now(), { cache: "no-store" });
+        const res = await fetch(api("/api/fear_greed?_=" + Date.now()), { cache: "no-store" });
         const data = await res.json();
         if (!data.success || !data.data) return;
         fngData = data.data;
@@ -1268,7 +1249,7 @@ function applyFilter() {
 
 async function fetchHistory(code, days) {
     try {
-        const res = await fetch(`/api/history?code=${encodeURIComponent(code)}&days=${days}&_=${Date.now()}`, { cache: "no-store" });
+        const res = await fetch(api(`/api/history?code=${encodeURIComponent(code)}&days=${days}&_=${Date.now()}`), { cache: "no-store" });
         const data = await res.json();
         if (data.success && Array.isArray(data.prices)) return data.prices;
     } catch (e) {}
@@ -1478,7 +1459,7 @@ async function shareCurrency(c) {
 
 async function fetchPrices() {
     try {
-        const res = await fetch("/api/market?_=" + Date.now(), { cache: "no-store" });
+        const res = await fetch(api("/api/market?_=" + Date.now()), { cache: "no-store" });
         if (!res.ok) { setLiveStatus(false); return; }
         const data = await res.json();
         if (data.success && data.currencies) {
@@ -1758,7 +1739,6 @@ const ACTIONS = [
     { id: "act:volatility", icon: "🔥", title: "پُرنوسان‌ترین", sub: "Volatility", run: () => { closeCmd(); toggleVolatility(); } },
     { id: "act:portfolio", icon: "💼", title: "پورتفولیو", sub: "Portfolio", run: () => { closeCmd(); openPortfolio(); } },
     { id: "act:alerts", icon: "🔔", title: "هشدار قیمت", sub: "Alerts", run: () => { closeCmd(); openAlerts(); } },
-    { id: "act:ai", icon: "🤖", title: "دستیار هوشمند", sub: "AI Chat", run: () => { closeCmd(); aiOpenModal(); } },
     { id: "act:settings", icon: "⚙️", title: "تنظیمات", sub: "Settings", run: () => { closeCmd(); openSettings(); } },
     { id: "act:theme-light", icon: "☀️", title: "تم روشن", sub: "Light", run: () => { setTheme("light"); closeCmd(); } },
     { id: "act:theme-dark", icon: "🌙", title: "تم تاریک", sub: "Dark", run: () => { setTheme("dark"); closeCmd(); } },
@@ -2164,7 +2144,7 @@ async function loadNews() {
     if (newsLoaded && newsItems.length) { renderNews(); return; }
     newsGrid.innerHTML = '<div class="news-loading"><div></div></div>';
     try {
-        const res = await fetch("/api/news?_=" + Date.now(), { cache: "no-store" });
+        const res = await fetch(api("/api/news?_=" + Date.now()), { cache: "no-store" });
         const data = await res.json();
         if (data.success) {
             newsItems = data.items || [];
@@ -2175,74 +2155,6 @@ async function loadNews() {
         }
     } catch (e) {
         newsGrid.innerHTML = '<div class="news-loading">❌</div>';
-    }
-}
-
-/* =========================================================
-   AI
-========================================================= */
-
-function aiAddMsg(role, text) {
-    if (!aiMsgs) return null;
-    const div = document.createElement("div");
-    div.className = "ai-msg " + role;
-    if (role === "bot" && !text) {
-        div.classList.add("typing");
-        div.innerHTML = "<span></span><span></span><span></span>";
-    } else div.textContent = text || "";
-    aiMsgs.appendChild(div);
-    aiMsgs.scrollTop = aiMsgs.scrollHeight;
-    return div;
-}
-
-function aiOpenModal() {
-    if (!aiModal) return;
-    openModal(aiModal, "#aiInput");
-    haptic();
-    if (aiMsgs && !aiMsgs.dataset.greeted) {
-        aiMsgs.dataset.greeted = "1";
-        aiAddMsg("bot", t("aiGreeting"));
-    }
-    setTimeout(() => { if (aiInput) aiInput.focus(); }, 250);
-}
-function aiCloseModal() {
-    closeModal(aiModal);
-}
-
-async function aiSendMessage(text) {
-    if (aiBusy) return;
-    text = (text || "").trim();
-    if (!text) return;
-    if (aiInput) aiInput.value = "";
-    if (aiSend) aiSend.disabled = true;
-    aiBusy = true;
-    aiAddMsg("user", text);
-    aiHistory.push({ role: "user", content: text });
-    const typing = aiAddMsg("bot", "");
-    try {
-        const res = await fetch("/api/ai_chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text, history: aiHistory.slice(-10, -1), lang: currentLang }),
-        });
-        const data = await res.json();
-        if (typing && typing.parentElement) typing.remove();
-        if (data.success) {
-            const reply = data.reply || "—";
-            aiAddMsg("bot", reply);
-            aiHistory.push({ role: "model", content: reply });
-        } else {
-            const div = aiAddMsg("bot", data.message || t("aiError"));
-            if (div) div.classList.add("error");
-        }
-    } catch (e) {
-        if (typing && typing.parentElement) typing.remove();
-        const div = aiAddMsg("bot", t("aiNetError"));
-        if (div) div.classList.add("error");
-    } finally {
-        aiBusy = false;
-        if (aiSend) aiSend.disabled = false;
-        if (aiInput) aiInput.focus();
     }
 }
 
@@ -2338,24 +2250,6 @@ newsChips.forEach(chip => chip.addEventListener("click", () => {
     });
     renderNews(); haptic();
 }));
-
-// AI
-if (aiBtn) aiBtn.addEventListener("click", aiOpenModal);
-if (aiClose) aiClose.addEventListener("click", aiCloseModal);
-if (aiModal) aiModal.addEventListener("click", (e) => { if (e.target.dataset.closeAi === "1") aiCloseModal(); });
-if (aiSend) aiSend.addEventListener("click", () => aiSendMessage((aiInput?.value || "").trim()));
-if (aiInput) {
-    aiInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); aiSendMessage(aiInput.value.trim()); }
-    });
-    aiInput.addEventListener("input", () => {
-        aiInput.style.height = "auto";
-        aiInput.style.height = Math.min(aiInput.scrollHeight, 100) + "px";
-    });
-}
-if (aiQuick) aiQuick.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => aiSendMessage(btn.dataset.q || btn.textContent.trim()));
-});
 
 // Portfolio
 if (portfolioBtn) portfolioBtn.addEventListener("click", openPortfolio);
@@ -2482,7 +2376,6 @@ document.addEventListener("keydown", (e) => {
         if (cmdModal && cmdModal.classList.contains("on")) closeCmd();
         if (modal && modal.classList.contains("on")) closeChart();
         if (convModal && convModal.classList.contains("on")) closeConverter();
-        if (aiModal && aiModal.classList.contains("on")) aiCloseModal();
         if (portfolioModal && portfolioModal.classList.contains("on")) closePortfolio();
         if (alertsModal && alertsModal.classList.contains("on")) closeAlerts();
         if (settingsModal && settingsModal.classList.contains("on")) closeSettings();
