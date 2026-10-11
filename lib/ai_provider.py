@@ -1,32 +1,35 @@
-"""کلاینت هوش مصنوعی — سازگار با OpenAI (`/chat/completions`).
+"""کلاینت هوش مصنوعی — چند ارائه‌دهنده با زنجیره‌ی جانشینی.
 
-پیش‌فرض روی سرویس Top-Tools-Ai تنظیم است و در صورت خطا/کندی،
-مدل‌های جانشین و در نهایت Gemini (اختیاری) امتحان می‌شوند.
+دلیل وجود این ساختار: سرویس عمومیِ `AI_*` (top-tools-ai) کلیدش با اپ‌های دیگر
+هم‌استفاده می‌شود و وقتی ظرفیتش پر شود خطای 503 «طلب در صف پر است» می‌دهد. اگر
+تنها راه همین باشد، چتِ کاربر با کلید دیگری می‌خوابد. پس هر ارائه‌دهنده‌ای که کلید
+اختصاصی‌اش ست شده باشد، **قبل از** سرویس عمومی امتحان می‌شود:
 
-نکته‌ی مهم درباره‌ی زمان پاسخ (اندازه‌گیری مجدد ۲۰۲۶-۱۰-۱۱، پاسخ تک‌توکنی):
-    Top-Tools-Ai     ~۷۸ ثانیه  ← از سقف ۶۰s فانکشن ورسل رد می‌شود؛ فقط با تنظیم دستی AI_MODEL
+    ۱. Mistral   → MISTRAL_API_KEY      (پلن Free بدون کارت بانکی، فارسی در فهرست زبان‌ها)
+    ۲. Groq      → GROQ_API_KEY         (استنتاج سریع، سازگار با OpenAI)
+    ۳. Gemini    → GEMINI_API_KEY       (پلن رایگان AI Studio)
+    ۴. سرویس عمومی AI_*                 (آخرین تلاش سازگار با OpenAI + مدل‌های جانشین)
+
+هر ارائه‌دهنده‌ی OpenAI-compatible با MODEL/BASE_URL خودش قابل بازنویسی است
+(`MISTRAL_MODEL`, `GROQ_BASE_URL` و …)، پس اگر شناسه‌ی مدل عوض شد فقط یک متغیر
+محیطی تغییر می‌کند و نیازی به دست‌زدن به کد نیست.
+
+زمان پاسخ (اندازه‌گیری ۲۰۲۶-۱۰-۱۱ روی سرویس عمومی، پاسخ تک‌توکنی):
+    Top-Tools-Ai     ~۷۸ ثانیه  ← از سقف ۶۰s فانکشن ورسل رد می‌شود
     MiniMax-M3       ~۵۲ ثانیه
     Step-5-Preview   ~۲۳ ثانیه
-    DeepSeek-V4.1-Flash ~۲۰ ثانیه  ← پیش‌فرض (سریع‌ترین اندازه‌گیری‌شده)
-    بنابراین کل بودجه‌ی زمانی محدود شده و مدل پیش‌فرض سریع‌ترین مدل همان کلید است.
+    DeepSeek-V4.1-Flash ~۲۰ ثانیه
+بنابراین کل بودجه‌ی زمانی محدود شده (AI_TOTAL_BUDGET) و مدل اول کوتاه‌ترین سهم را دارد.
 
-    ⚠ سرویس روی هر کلید هم‌زمانی محدودی دارد (خطای 429) و درخواست قطع‌شده را تا انتها
-    پردازش می‌کند؛ پس زنجیره‌ی فالبک فقط وقتی جواب می‌دهد که تلاش اول خیلی زود خطا بدهد.
-
-    ⚠ اگر کلید هم‌زمان جای دیگری هم استفاده شود، دروازه‌ی سرویس خطای 503 با متن
-    «The request queue is temporarily full» می‌دهد. این خطا موقتی است، پس مثل 429
-    یک بار کوتاه صبر می‌کنیم و دوباره می‌زنیم و پیام شفاف‌تری به کاربر می‌دهیم.
+⚠ خطاهای 429 و 503 موقتی‌اند: یک بار کوتاه صبر می‌کنیم و همان ارائه‌دهنده را دوباره
+می‌زنیم، بعد به ارائه‌دهنده‌ی بعدی می‌رویم.
 
 همه‌ی کلیدها فقط از متغیرهای محیطی خوانده می‌شوند و هیچ کلیدی در کد نیست:
-
-    AI_API_KEY            (اجباری برای سرویس اصلی)
-    AI_BASE_URL           پیش‌فرض: https://top-tools-ai.com/api/v1
-    AI_MODEL              پیش‌فرض: DeepSeek-V4.1-Flash
-    AI_FALLBACK_MODELS    پیش‌فرض: Step-5-Preview,GLM-5.3-Flash
-    AI_MAX_TOKENS         پیش‌فرض: 700
-    AI_TOTAL_BUDGET       پیش‌فرض: 55 (ثانیه، باید < maxDuration باشد)
-    AI_FIRST_ATTEMPT      پیش‌فرض: 45 (بودجه‌ی تلاش اول)
-    GEMINI_API_KEY        اختیاری، فقط به عنوان پشتیبان
+    MISTRAL_API_KEY / MISTRAL_BASE_URL / MISTRAL_MODEL
+    GROQ_API_KEY    / GROQ_BASE_URL    / GROQ_MODEL
+    GEMINI_API_KEY  / GEMINI_MODEL
+    AI_API_KEY / AI_BASE_URL / AI_MODEL / AI_FALLBACK_MODELS
+    AI_MAX_TOKENS / AI_TOTAL_BUDGET / AI_FIRST_ATTEMPT
 """
 
 from __future__ import annotations
@@ -36,6 +39,7 @@ import time
 
 import requests
 
+# ===== سرویس عمومی (سازگار با OpenAI) =====
 AI_BASE_URL = os.environ.get("AI_BASE_URL", "https://top-tools-ai.com/api/v1").rstrip("/")
 AI_API_KEY = os.environ.get("AI_API_KEY", "").strip()
 AI_MODEL = os.environ.get("AI_MODEL", "DeepSeek-V4.1-Flash").strip()
@@ -43,14 +47,72 @@ AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "700"))
 AI_TOTAL_BUDGET = float(os.environ.get("AI_TOTAL_BUDGET", "55"))
 AI_FIRST_ATTEMPT = float(os.environ.get("AI_FIRST_ATTEMPT", "45"))
 
+# ===== Gemini (ساختار درخواست متفاوت) =====
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-flash-latest"]
+GEMINI_BASE_URL = os.environ.get("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta").rstrip("/")
+GEMINI_FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-flash-latest"]
+
+# ===== ارائه‌دهنده‌های اختصاصی (فقط وقتی کلیدشان ست باشد فعال می‌شوند) =====
+EXTRA_PROVIDERS = [
+    {
+        "name": "mistral",
+        "key_env": "MISTRAL_API_KEY",
+        "base_env": "MISTRAL_BASE_URL",
+        "model_env": "MISTRAL_MODEL",
+        "base_url": "https://api.mistral.ai/v1",
+        "model": "mistral-small-latest",
+    },
+    {
+        "name": "groq",
+        "key_env": "GROQ_API_KEY",
+        "base_env": "GROQ_BASE_URL",
+        "model_env": "GROQ_MODEL",
+        "base_url": "https://api.groq.com/openai/v1",
+        "model": "llama-3.3-70b-versatile",
+    },
+]
 
 
-def _fallback_models() -> list[str]:
+def _generic_models() -> list[str]:
     raw = os.environ.get("AI_FALLBACK_MODELS", "Step-5-Preview,GLM-5.3-Flash")
     models = [m.strip() for m in raw.split(",") if m.strip()]
-    chain = [AI_MODEL] + [m for m in models if m != AI_MODEL]
+    return [AI_MODEL] + [m for m in models if m != AI_MODEL]
+
+
+def _gemini_models() -> list[str]:
+    explicit = os.environ.get("GEMINI_MODEL", "").strip()
+    return [explicit] if explicit else list(GEMINI_FALLBACK_MODELS)
+
+
+def provider_chain() -> list[dict]:
+    """ارائه‌دهنده‌های قابل استفاده، به ترتیب اولویت.
+
+    کلیدهای اختصاصی جلوترند تا یک سرویس شلوغِ مشترک، چت را از کار نیندازد.
+    """
+    chain: list[dict] = []
+
+    for provider in EXTRA_PROVIDERS:
+        key = os.environ.get(provider["key_env"], "").strip()
+        if not key:
+            continue
+        chain.append({
+            "name": provider["name"],
+            "kind": "openai",
+            "api_key": key,
+            "base_url": os.environ.get(provider["base_env"], provider["base_url"]).rstrip("/"),
+            "model": os.environ.get(provider["model_env"], provider["model"]),
+        })
+
+    if GEMINI_KEY:
+        for model in _gemini_models():
+            chain.append({"name": "gemini", "kind": "gemini",
+                          "api_key": GEMINI_KEY, "model": model})
+
+    if AI_API_KEY:
+        for model in _generic_models():
+            chain.append({"name": "top-tools", "kind": "openai",
+                          "api_key": AI_API_KEY, "base_url": AI_BASE_URL, "model": model})
+
     return chain
 
 
@@ -91,18 +153,15 @@ class _HTTPError(RuntimeError):
         self.status = status
 
 
-def _call_openai_compatible(model: str, messages: list[dict], timeout: float) -> str:
-    if not AI_API_KEY:
-        raise RuntimeError("AI_API_KEY تنظیم نشده است")
-
+def _call_openai_compatible(provider: dict, messages: list[dict], timeout: float) -> str:
     resp = requests.post(
-        f"{AI_BASE_URL}/chat/completions",
+        f"{provider['base_url']}/chat/completions",
         headers={
-            "Authorization": f"Bearer {AI_API_KEY}",
+            "Authorization": f"Bearer {provider['api_key']}",
             "Content-Type": "application/json",
         },
         json={
-            "model": model,
+            "model": provider["model"],
             "messages": messages,
             "stream": False,
             "max_tokens": AI_MAX_TOKENS,
@@ -120,50 +179,53 @@ def _call_openai_compatible(model: str, messages: list[dict], timeout: float) ->
     return (choices[0].get("message") or {}).get("content", "").strip()
 
 
-def _call_gemini(system: str, messages: list[dict], timeout: float) -> str:
+def _call_gemini(model: str, system: str, messages: list[dict], timeout: float) -> str:
     contents = [
         {"role": "user" if m["role"] == "user" else "model", "parts": [{"text": m["content"]}]}
         for m in messages
         if m["role"] != "system"
     ]
-    errors = []
-    for model in GEMINI_MODELS:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}"
-        try:
-            resp = requests.post(
-                url,
-                json={
-                    "system_instruction": {"parts": [{"text": system}]},
-                    "contents": contents,
-                    "generationConfig": {"temperature": 0.7, "topP": 0.95, "maxOutputTokens": 1024},
-                },
-                timeout=timeout,
-            )
-            if resp.status_code != 200:
-                raise RuntimeError(f"HTTP {resp.status_code}")
-            cands = resp.json().get("candidates") or []
-            parts = (cands[0].get("content", {}) or {}).get("parts", []) if cands else []
-            text = "".join(p.get("text", "") for p in parts).strip()
-            if text:
-                return text
-            raise RuntimeError("خالی")
-        except Exception as exc:  # noqa: BLE001 - خطای هر مدل جداگانه جمع می‌شود
-            errors.append(f"{model}: {str(exc)[:60]}")
-    raise RuntimeError(" | ".join(errors[-2:]) or "gemini failed")
+    resp = requests.post(
+        f"{GEMINI_BASE_URL}/models/{model}:generateContent",
+        headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
+        json={
+            "system_instruction": {"parts": [{"text": system}]},
+            "contents": contents,
+            "generationConfig": {"temperature": 0.7, "topP": 0.95, "maxOutputTokens": 1024},
+        },
+        timeout=timeout,
+    )
+    if resp.status_code != 200:
+        raise _HTTPError(resp.status_code, resp.text)
+
+    candidates = resp.json().get("candidates") or []
+    parts = (candidates[0].get("content", {}) or {}).get("parts", []) if candidates else []
+    text = "".join(p.get("text", "") for p in parts).strip()
+    if not text:
+        raise RuntimeError("پاسخ خالی از مدل")
+    return text
+
+
+def _call(provider: dict, system: str, messages: list[dict], timeout: float) -> str:
+    if provider["kind"] == "gemini":
+        return _call_gemini(provider["model"], system, messages, timeout)
+    return _call_openai_compatible(provider, messages, timeout)
 
 
 def ai_chat(message: str, history=None, lang: str = "fa", market_ctx: str = "") -> dict:
     """پاسخ کوتاه بازار محور به پیام کاربر.
 
     خروجی همیشه با قرارداد فرانت‌اند سازگار است:
-        {"success": True,  "reply": "...", "ai_powered": True}
+        {"success": True,  "reply": "...", "ai_powered": True, "provider": "...", "model": "..."}
         {"success": False, "message": "...", "debug": "..."}
     """
-    if not AI_API_KEY and not GEMINI_KEY:
+    chain = provider_chain()
+    if not chain:
         return {
             "success": True,
             "ai_powered": False,
-            "reply": "⚠️ سرویس AI فعال نیست. کلید AI_API_KEY را در متغیرهای محیطی تنظیم کن.",
+            "reply": "⚠️ سرویس AI فعال نیست. یکی از کلیدها (MISTRAL_API_KEY یا AI_API_KEY) را "
+                     "در متغیرهای محیطی تنظیم کن.",
         }
 
     messages = _build_messages(message, history, lang, market_ctx)
@@ -171,28 +233,29 @@ def ai_chat(message: str, history=None, lang: str = "fa", market_ctx: str = "") 
 
     started = time.time()
     errors: list[str] = []
-    chain = _fallback_models()
 
-    for index, model in enumerate(chain):
+    for index, provider in enumerate(chain):
+        label = f"{provider['name']}/{provider['model']}"
         for attempt in (1, 2):
             remaining = AI_TOTAL_BUDGET - (time.time() - started)
-            if remaining < 8 or not AI_API_KEY:
-                errors.append(f"{model}: بودجه‌ی زمانی تمام شد")
+            if remaining < 8:
+                errors.append(f"{label}: بودجه‌ی زمانی تمام شد")
                 break
             budget = min(AI_FIRST_ATTEMPT if index == 0 else remaining, remaining)
             try:
-                reply = _call_openai_compatible(model, messages, budget)
+                reply = _call(provider, system, messages, budget)
                 if reply:
                     return {
                         "success": True,
                         "reply": reply,
                         "ai_powered": True,
-                        "model": model,
+                        "provider": provider["name"],
+                        "model": provider["model"],
                         "latency_ms": int((time.time() - started) * 1000),
                     }
-            except Exception as exc:  # noqa: BLE001 - برای برگرداندن پیام مناسب به کاربر
-                errors.append(f"{model}: {str(exc)[:80]}")
-                # سرویس سقف هم‌زمانی دارد («Try again shortly»)؛ یک بار کوتاه صبر و دوباره می‌زنیم
+            except Exception as exc:  # noqa: BLE001 - پیام مناسب باید به کاربر برسد
+                errors.append(f"{label}: {str(exc)[:80]}")
+                # 429 و 503 موقتی‌اند: یک بار کوتاه صبر و همان ارائه‌دهنده را دوباره می‌زنیم
                 if getattr(exc, "status", 0) in (429, 503) and attempt == 1:
                     pause = min(6.0, max(0.0, AI_TOTAL_BUDGET - (time.time() - started) - 12))
                     if pause >= 2:
@@ -200,26 +263,16 @@ def ai_chat(message: str, history=None, lang: str = "fa", market_ctx: str = "") 
                         continue
                 break
 
-    # پشتیبان اختیاری: Gemini
-    remaining = AI_TOTAL_BUDGET - (time.time() - started)
-    if GEMINI_KEY and remaining > 8:
-        try:
-            reply = _call_gemini(system, messages, remaining)
-            if reply:
-                return {"success": True, "reply": reply, "ai_powered": True, "model": "gemini-fallback"}
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"gemini: {str(exc)[:80]}")
-
     slow = (time.time() - started) >= AI_TOTAL_BUDGET - 2
-    overloaded = any("queue is temporarily full" in err or "503" in err for err in errors)
+    overloaded = any(("queue is temporarily full" in err) or (" 503" in err) for err in errors)
     if slow:
-        message = "⏱ پاسخ مدل طول کشید و نیمه‌کاره ماند. یک بار دیگر بپرس."
+        message_out = "⏱ پاسخ مدل طول کشید و نیمه‌کاره ماند. یک بار دیگر بپرس."
     elif overloaded:
-        message = "🚦 سرویس هوش مصنوعی همین حالا شلوغ است. چند لحظه بعد دوباره بپرس."
+        message_out = "🚦 سرویس هوش مصنوعی همین حالا شلوغ است. چند لحظه بعد دوباره بپرس."
     else:
-        message = "❌ سرویس هوش مصنوعی پاسخ نداد."
+        message_out = "❌ سرویس هوش مصنوعی پاسخ نداد."
     return {
         "success": False,
-        "message": message,
+        "message": message_out,
         "debug": " | ".join(errors[-2:]),
     }
