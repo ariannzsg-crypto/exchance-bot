@@ -121,12 +121,33 @@ var DEPLOYED_API = "https://exchance-bot.vercel.app";   // ← بعد از دی�
 
 در مرورگر این مقدار خالی می‌ماند (همان مبدأ)، و در اپ اندروید استفاده می‌شود.
 
-### گرفتن APK از گیت‌هاب (بدون نصب چیزی)
+### دانلود و نصب اپ
 
-هر push روی `main` که فایل‌های `web/`, `android/`, `resources/` یا تنظیمات را
-عوض کند، workflow `Android APK` را اجرا می‌کند. APK ساخته‌شده در همان اجرا زیر
-**Artifacts** با نام `exchance-debug-apk` برای دانلود می‌گذارد. اجرای دستی هم از
-تب Actions → Android APK → Run workflow ممکن است.
+آخرین نسخه همیشه در صفحه‌ی Releases است:
+
+**<https://github.com/ariannzsg-crypto/exchance-bot/releases/latest>**
+
+فایل `exchance-<نسخه>-debug.apk` را دانلود کن، روی گوشی باز کن و اجازه‌ی
+«نصب از منابع نامعلوم» را بده. این APK با کلید دیباگ امضا شده (APK Signature
+Scheme v2/v3) و برای نصب دستی روی اندروید ۷ به بالا مناسب است؛ برای گوگل‌پلی
+باید با کلید خودت امضا شود.
+
+### ساخت نسخه‌ی جدید
+
+```bash
+# ۱) کد را روی main push کن  ۲) برچسب نسخه بزن و بفرست
+git tag -a v1.1.0 -m "EXCHANCE 1.1.0"
+git push origin v1.1.0
+```
+
+همین کافی است: workflow اجرا می‌شود، APK را می‌سازد و به Release همان تگ پیوست
+می‌کند. نام تگ، هم نام فایل پیوست و هم **نسخه‌ی داخل اپ** را تعیین می‌کند
+(`v1.1.0` → `versionName 1.1.0`).
+
+هر push روی `main` که `web/`, `android/`, `resources/` یا تنظیمات را عوض کند هم
+APK را می‌سازد و این بار زیر **Artifacts** همان اجرا (نام `exchance-debug-apk`،
+۳۰ روز) می‌گذارد — بدون ساخت Release. اجرای دستی هم از تب Actions →
+Android APK → Run workflow ممکن است.
 
 ### ساخت محلی (اختیاری)
 
