@@ -7,7 +7,9 @@ android {
         applicationId "com.exchance.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        // v1.1.0 ویجت قیمت و هشدارها را آورد؛ versionCode باید بالا برود تا
+        // نصب تازه روی نسخه‌ی قبلی بنشیند.
+        versionCode 2
         // در CI نام تگ نسخه را می‌دهیم (v1.2.0 → 1.2.0)؛ ساخت محلی روی 1.0 می‌ماند
         versionName (System.getenv("APP_VERSION") ?: "1.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

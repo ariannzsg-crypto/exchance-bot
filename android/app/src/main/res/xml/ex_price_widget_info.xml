@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- تنظیمات ویجت.
+     updatePeriodMillis کمینه‌اش ۳۰ دقیقه است (خودِ اندروید محدود کرده) و همین
+     چیزی است که قیمت را در پس‌زمینه تازه نگه می‌دارد؛ برای تازه‌سازی دستی،
+     دکمه‌ی چرخان در خود ویجت هست. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="70dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/ex_widget_price"
+    android:previewLayout="@layout/ex_widget_price"
+    android:previewImage="@mipmap/ic_launcher"
+    android:description="@string/ex_widget_description"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:configure="com.exchance.app.widget.WidgetConfigActivity" />

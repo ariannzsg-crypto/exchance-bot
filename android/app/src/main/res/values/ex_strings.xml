@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- رشته‌های بومی ویجت و اعلان‌ها.
+     عمداً جدا از strings.xml است چون `npx cap sync` همان فایل را دست‌کاری
+     می‌کند و رشته‌های ما را پاک می‌کرد. -->
+<resources>
+    <string name="ex_widget_label">EXCHANCE — قیمت لحظه‌ای</string>
+    <string name="ex_widget_description">قیمت دلار، طلا، سکه و رمزارز روی صفحه‌ی خانه</string>
+    <string name="ex_widget_refresh">به‌روزرسانی قیمت</string>
+    <string name="ex_widget_open">باز کردن EXCHANCE</string>
+    <string name="ex_widget_loading">در حال گرفتن قیمت…</string>
+    <string name="ex_widget_error">قیمت در دسترس نیست</string>
+    <string name="ex_widget_updated">آخرین قیمت: %1$s</string>
+    <string name="ex_widget_no_symbol">برای انتخاب نماد، ویجت را لمس کن</string>
+
+    <string name="ex_config_title">ویجت قیمت</string>
+    <string name="ex_config_search">جست‌وجوی نام، کد یا پرچم…</string>
+    <string name="ex_config_high">هشدار بالاتر از</string>
+    <string name="ex_config_low">هشدار پایین‌تر از</string>
+    <string name="ex_config_alert_hint">خالی بگذاری، خبری نمی‌فرستیم</string>
+    <string name="ex_config_save">ذخیره روی ویجت</string>
+    <string name="ex_config_loading">در حال گرفتن فهرست نمادها…</string>
+    <string name="ex_config_offline">فهرست نمادها نیامد؛ اینترنت را بررسی کن</string>
+    <string name="ex_config_pick">یک نماد انتخاب کن</string>
+
+    <string name="ex_notif_channel">هشدار قیمت</string>
+    <string name="ex_notif_channel_desc">وقتی قیمت از حدی که گذاشتی بگذرد خبر می‌دهیم</string>
+    <string name="ex_notif_high_title">%1$s از حد بالای تو گذشت</string>
+    <string name="ex_notif_low_title">%1$s به حد پایین تو رسید</string>
+    <string name="ex_notif_body">قیمت: %1$s   |   حد تو: %2$s</string>
+    <string name="ex_notif_perm">برای گرفتن هشدار، اجازه‌ی اعلان را بده</string>
+
+    <!-- آدرس API؛ باید با DEPLOYED_API در web/config.js یکی باشد (تست دارد) -->
+    <string name="ex_api_base" translatable="false">https://exchance-bot.vercel.app</string>
+</resources>

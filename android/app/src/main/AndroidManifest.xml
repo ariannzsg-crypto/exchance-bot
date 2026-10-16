@@ -20,6 +20,44 @@
             </intent-filter>
         </activity>
 
+        <!-- ویجت قیمت: هر نمونه یک نماد (دلار، طلا، سکه، رمزارز…) -->
+        <receiver
+            android:name=".widget.PriceWidgetProvider"
+            android:exported="true"
+            android:label="@string/ex_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ex_price_widget_info" />
+        </receiver>
+
+        <!-- صفحه‌ی انتخاب نماد و گذاشتن حد هشدار -->
+        <activity
+            android:name=".widget.WidgetConfigActivity"
+            android:exported="true"
+            android:label="@string/ex_config_title"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- بررسی دوره‌ای هشدارها (آلارم غیردقیق — اجازه‌ی خاصی نمی‌خواهد) -->
+        <receiver
+            android:name=".widget.AlertAlarmReceiver"
+            android:exported="false" />
+
+        <!-- بعد از ریبوت، آلارم‌ها و قیمت ویجت‌ها دوباره سرِ کار بیایند -->
+        <receiver
+            android:name=".widget.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -32,4 +70,8 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- اعلان هشدار قیمت (اندروید ۱۳ به بعد اجازه‌ی زمان اجرا هم می‌خواهد) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- برگرداندن آلارم‌های هشدار بعد از روشن شدن گوشی -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>

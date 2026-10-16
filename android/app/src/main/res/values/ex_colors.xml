@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- رنگ‌های بومی ویجت و اعلان. نام‌ها با پیشوند ex_ هستند تا با پالت
+     کتابخانه‌ی Capacitor (colorPrimary و…) قاطی نشوند. -->
+<resources>
+    <color name="ex_card_bg">#12101F</color>
+    <color name="ex_card_border">#2A2740</color>
+    <color name="ex_text">#F4F2FF</color>
+    <color name="ex_text_dim">#A9A4C7</color>
+    <color name="ex_up">#35D07F</color>
+    <color name="ex_down">#FF5C77</color>
+    <color name="ex_accent">#8B5CF6</color>
+    <color name="ex_button_bg">#1F1C33</color>
+</resources>

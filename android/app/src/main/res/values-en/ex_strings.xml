@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="ex_widget_label">EXCHANCE — live prices</string>
+    <string name="ex_widget_description">Dollar, gold, coins and crypto prices on your home screen</string>
+    <string name="ex_widget_refresh">Refresh prices</string>
+    <string name="ex_widget_open">Open EXCHANCE</string>
+    <string name="ex_widget_loading">Fetching prices…</string>
+    <string name="ex_widget_error">Prices unavailable</string>
+    <string name="ex_widget_updated">Updated: %1$s</string>
+    <string name="ex_widget_no_symbol">Tap the widget to pick a symbol</string>
+
+    <string name="ex_config_title">Price widget</string>
+    <string name="ex_config_search">Search by name, code or flag…</string>
+    <string name="ex_config_high">Alert above</string>
+    <string name="ex_config_low">Alert below</string>
+    <string name="ex_config_alert_hint">Leave empty to stay quiet</string>
+    <string name="ex_config_save">Save to widget</string>
+    <string name="ex_config_loading">Loading the symbol list…</string>
+    <string name="ex_config_offline">Could not load symbols — check your connection</string>
+    <string name="ex_config_pick">Pick a symbol</string>
+
+    <string name="ex_notif_channel">Price alerts</string>
+    <string name="ex_notif_channel_desc">We tell you when a price crosses the level you set</string>
+    <string name="ex_notif_high_title">%1$s went above your level</string>
+    <string name="ex_notif_low_title">%1$s reached your low level</string>
+    <string name="ex_notif_body">Price: %1$s   |   your level: %2$s</string>
+    <string name="ex_notif_perm">Allow notifications to receive price alerts</string>
+</resources>
