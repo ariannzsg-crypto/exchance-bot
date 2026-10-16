@@ -47,11 +47,29 @@ jobs:
       - name: Install the Android platform and build tools
         run: |
           set -euo pipefail
-          SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+
+          # مسیر SDK را حدس نمی‌زنیم: ایمیج‌های تازه‌ی رانر می‌توانند SDK را جای
+          # دیگری بگذارند و Gradle بدون local.properties فقط به ANDROID_SDK_ROOT
+          # تکیه می‌کند؛ نتیجه‌اش «SDK location not found» و مرگ سریع بیلد است.
+          # پس ریشه را از جای واقعیِ sdkmanager حساب می‌کنیم و به هر دو نام
+          # (ANDROID_HOME و ANDROID_SDK_ROOT) و به local.properties می‌دهیم.
+          looks_like_sdk() { [ -d "$1/platforms" ] || [ -d "$1/cmdline-tools" ] || [ -d "$1/platform-tools" ]; }
+
+          SDKMANAGER=$(command -v sdkmanager || true)
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          if [ -n "$SDKMANAGER" ]; then
+            # SDK_ROOT/cmdline-tools/<version>/bin/sdkmanager → ریشه سه پله بالاتر
+            DERIVED=$(cd "$(dirname "$(readlink -f "$SDKMANAGER")")/../../.." && pwd)
+            if looks_like_sdk "$DERIVED"; then SDK_ROOT="$DERIVED"; fi
+          fi
+          [ -n "$SDKMANAGER" ] || SDKMANAGER=$(ls -d "$SDK_ROOT"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1 || true)
+
+          echo "using SDK_ROOT=$SDK_ROOT sdkmanager=$SDKMANAGER"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
-          SDKMANAGER=$(ls -d "$SDK_ROOT"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1 || true)
-          [ -n "$SDKMANAGER" ] || SDKMANAGER=$(command -v sdkmanager)
-          echo "using $SDKMANAGER"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "sdk.dir=$SDK_ROOT" > android/local.properties
+
+          test -n "$SDKMANAGER" || { echo "sdkmanager not found and $SDK_ROOT has no cmdline-tools"; exit 1; }
           yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
@@ -67,8 +85,32 @@ jobs:
           # نام تگ، نسخه‌ی داخل اپ را تعیین می‌کند (v1.0.0 → 1.0.0)
           APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: |
+          set -o pipefail
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee gradle-build.log
+
+      # خرابی بیلد اندروید داخل لاگ گیت‌هاب قفل است (دیدنش لاگین می‌خواهد). این
+      # استپ خلاصه‌ی خطا را روی خودِ صفحه‌ی اجرا می‌گذارد تا از بیرون هم بشود
+      # فهمید کجا شکسته — بدون اینکه لازم باشد کسی لاگین کند.
+      - name: Explain the Android build failure
+        if: failure()
+        run: |
+          {
+            echo "## Android build diagnostics"
+            echo
+            echo "| what | value |"
+            echo "| --- | --- |"
+            echo "| java | \`$(java -version 2>&1 | head -1)\` |"
+            echo "| ANDROID_SDK_ROOT | \`${ANDROID_SDK_ROOT:-unset}\` |"
+            echo "| ANDROID_HOME | \`${ANDROID_HOME:-unset}\` |"
+            echo "| sdkmanager | \`$(command -v sdkmanager || echo missing)\` |"
+            echo "| sdk dir exists | \`$([ -d "${ANDROID_SDK_ROOT:-/nonexistent}" ] && echo yes || echo no)\` |"
+            echo "| gradle wrapper | \`$(ls android/gradle/wrapper 2>/dev/null | tr '\n' ' ')\` |"
+            echo
+            echo '```'
+            tail -n 200 android/gradle-build.log 2>/dev/null || echo "(gradle output was not captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
