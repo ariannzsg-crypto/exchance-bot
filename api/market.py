@@ -18,6 +18,7 @@ class handler(BaseHTTPRequestHandler):
                     "change": item.get("change", 0),
                     "unit": item.get("unit", "تومان"),
                     "source": item.get("source"), "type": item.get("type"),
+                    "group": item.get("group", item.get("type")),
                     "usd_price": item.get("usd_price"),
                 })
 

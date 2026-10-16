@@ -1,7 +1,7 @@
 "use strict";
 
 /* =========================================================
-   EXCHANCE — Web App v80
+   EXCHANCE — Web App v82
    ========================================================= */
 
 const $ = id => document.getElementById(id);
@@ -13,7 +13,7 @@ const categoryTabs = document.querySelectorAll(".tab");
 const currencyCount = $("currencyCount"), marketStatus = $("marketStatus");
 const lastUpdate = $("lastUpdate"), sourceText = $("sourceText");
 const emptyState = $("emptyState"), themeToggle = $("themeToggle");
-const tickerTrack = $("tickerTrack");
+const tickerTrack = $("tickerTrack"), flagStrip = $("flagStrip");
 const paletteBtn = $("paletteBtn"), themePop = $("themePop");
 const modal = $("chartModal"), modalPanel = $("modalPanel");
 const clockTime = $("clockTime"), clockDate = $("clockDate");
@@ -263,7 +263,7 @@ function addRecentSearch(q) {
 const I18N = {
     fa: {
         search: "جستجوی ارز، طلا یا رمزارز...",
-        tabAll: "همه", tabFiat: "ارز و طلا", tabCrypto: "رمزارز", tabNews: "📰 اخبار", tabWatch: "⭐",
+        tabAll: "همه", tabFiat: "💵 ارز", tabGold: "🥇 طلا", tabCrypto: "₿ رمزارز", tabNews: "📰 اخبار", tabWatch: "⭐",
         marketLabel: "بازار", countLabel: "تعداد نمادها", updateLabel: "بروزرسانی",
         liveStatus: "قیمت‌ها زنده (Polling هر ۱۰s)",
         errTitle: "دریافت قیمت‌ها ممکن نشد", errSub: "اتصال به سرور برقرار نشد.",
@@ -283,7 +283,9 @@ const I18N = {
         unit: "تومان", price: "قیمت", source: "منبع",
         chartHigh: "بیشترین", chartLow: "کمترین", chartAvg: "میانگین",
         chartType: "نوع", beforeNow: "قبل‌تر", nowLabel: "اکنون",
-        fiatLabel: "ارز و طلا", cryptoLabel: "رمزارز",
+        fiatLabel: "ارز", goldLabel: "طلا و فلزات", cryptoLabel: "رمزارز",
+        symbolCode: "نماد", splashSub: "قیمت لحظه‌ای ارز، طلا و رمزارز",
+        flagStripAria: "دسترسی سریع به نمادها با پرچم‌شان",
         agoNow: "همین حالا", agoMin: "دقیقه پیش", agoHour: "ساعت پیش", agoDay: "روز پیش",
         portEmpty: "هنوز دارایی‌ای اضافه نکردی", alertEmpty: "هنوز هشداری تنظیم نکردی",
         fngLabel: "شاخص ترس و طمع", pwaInstall: "نصب روی گوشی",
@@ -316,7 +318,7 @@ const I18N = {
     },
     en: {
         search: "Search currency, gold or crypto...",
-        tabAll: "All", tabFiat: "Currency", tabCrypto: "Crypto", tabNews: "📰 News", tabWatch: "⭐",
+        tabAll: "All", tabFiat: "💵 Currency", tabGold: "🥇 Gold", tabCrypto: "₿ Crypto", tabNews: "📰 News", tabWatch: "⭐",
         marketLabel: "Market", countLabel: "Symbols", updateLabel: "Updated",
         liveStatus: "Live prices (Polling 10s)",
         errTitle: "Failed to load prices", errSub: "Could not connect to server.",
@@ -336,7 +338,9 @@ const I18N = {
         unit: "Toman", price: "Price", source: "Source",
         chartHigh: "High", chartLow: "Low", chartAvg: "Avg",
         chartType: "Type", beforeNow: "Earlier", nowLabel: "Now",
-        fiatLabel: "Currency", cryptoLabel: "Crypto",
+        fiatLabel: "Currency", goldLabel: "Gold & metals", cryptoLabel: "Crypto",
+        symbolCode: "Symbol", splashSub: "Live prices for currencies, gold & crypto",
+        flagStripAria: "Quick access to symbols by flag",
         agoNow: "Just now", agoMin: "min ago", agoHour: "hr ago", agoDay: "d ago",
         portEmpty: "No assets added yet", alertEmpty: "No alerts set yet",
         fngLabel: "Fear & Greed Index", pwaInstall: "Install app",
@@ -369,7 +373,7 @@ const I18N = {
     },
     ar: {
         search: "ابحث عن عملة أو ذهب أو عملة رقمية...",
-        tabAll: "الكل", tabFiat: "العملات", tabCrypto: "العملات الرقمية", tabNews: "📰 الأخبار", tabWatch: "⭐",
+        tabAll: "الكل", tabFiat: "💵 عملات", tabGold: "🥇 ذهب", tabCrypto: "₿ عملات رقمية", tabNews: "📰 الأخبار", tabWatch: "⭐",
         marketLabel: "السوق", countLabel: "الأصول", updateLabel: "التحديث",
         liveStatus: "الأسعار مباشرة",
         errTitle: "فشل تحميل الأسعار", errSub: "تعذر الاتصال بالخادم.",
@@ -389,7 +393,9 @@ const I18N = {
         unit: "تومان", price: "السعر", source: "المصدر",
         chartHigh: "الأعلى", chartLow: "الأدنى", chartAvg: "المتوسط",
         chartType: "النوع", beforeNow: "سابقاً", nowLabel: "الآن",
-        fiatLabel: "العملات", cryptoLabel: "العملات الرقمية",
+        fiatLabel: "العملات", goldLabel: "الذهب والمعادن", cryptoLabel: "العملات الرقمية",
+        symbolCode: "الرمز", splashSub: "أسعار العملات والذهب والعملات الرقمية مباشرة",
+        flagStripAria: "وصول سريع إلى الرموز بالعلم",
         agoNow: "الآن", agoMin: "دقيقة", agoHour: "ساعة", agoDay: "يوم",
         portEmpty: "لم تضف أصولاً بعد", alertEmpty: "لم تضبط تنبيهات بعد",
         fngLabel: "مؤشر الخوف والجشع", pwaInstall: "ثبّت التطبيق",
@@ -595,7 +601,9 @@ const ISO = {
     usd:"US", eur:"EU", gbp:"GB", aed:"AE", try:"TR", chf:"CH",
     cny:"CN", jpy:"JP", krw:"KR", cad:"CA", aud:"AU", rub:"RU",
     inr:"IN", iqd:"IQ", afn:"AF", sar:"SA", qar:"QA", kwd:"KW",
-    bhd:"BH", omr:"OM", hkd:"HK", myr:"MY", thb:"TH", nzd:"NZ"
+    bhd:"BH", omr:"OM", hkd:"HK", myr:"MY", thb:"TH", nzd:"NZ",
+    pkr:"PK", sgd:"SG", syp:"SY", azn:"AZ", amd:"AM", gel:"GE",
+    kgs:"KG", tjs:"TJ", tmt:"TM", dkk:"DK", sek:"SE", nok:"NO"
 };
 
 const FIAT_C = {
@@ -604,7 +612,10 @@ const FIAT_C = {
     krw:"#1e3a5f", cad:"#3a1e4a", aud:"#1e4a5f", rub:"#5f3a1e",
     inr:"#5f4a1e", iqd:"#4a3a1e", afn:"#4a1e1e", sar:"#1e5f2e",
     qar:"#3a1e5f", kwd:"#2e5f1e", bhd:"#4a2e1e", omr:"#5f2e2e",
-    hkd:"#5f1e1e", myr:"#1e5f5f", thb:"#5f1e3a", nzd:"#1e4a3a"
+    hkd:"#5f1e1e", myr:"#1e5f5f", thb:"#5f1e3a", nzd:"#1e4a3a",
+    pkr:"#1e4a2e", sgd:"#5f1e2e", syp:"#2e2e5f", azn:"#1e5f4a",
+    amd:"#5f2e3a", gel:"#4a1e2e", kgs:"#5f4a2e", tjs:"#2e5f5f",
+    tmt:"#3a5f1e", dkk:"#5f1e2e", sek:"#1e4a5f", nok:"#2e3a5f"
 };
 
 const CRYPTO_C = {
@@ -615,7 +626,14 @@ const CRYPTO_C = {
     uni:"#ff007a", xlm:"#14b6e7", xmr:"#ff6600", bch:"#8dc351",
     near:"#00c1de", matic:"#8247e5", arb:"#12aaff", op:"#ff0420",
     atom:"#2e3148", pepe:"#3d8130", sui:"#4da2ff", apt:"#000000",
-    tia:"#7b2bf9", sei:"#9e1f19"
+    tia:"#7b2bf9", sei:"#9e1f19",
+    dash:"#008de4", etc:"#328332", zec:"#f4b728", fil:"#0090ff",
+    hbar:"#222222", icp:"#f15a24", inj:"#00d2ff", vet:"#15bdff",
+    algo:"#000000", eos:"#443f54", xtz:"#2c7df7", mkr:"#1aab9b",
+    crv:"#3465a4", cake:"#633001", ldo:"#00a3ff", imx:"#0b0e11",
+    grt:"#6747ed", sandbox:"#00adef", mana:"#ff2d55", axs:"#0055d5",
+    wif:"#c8a15a", jup:"#3bd0a0", chz:"#cd0124", enj:"#7866d5",
+    oneinch:"#1b314f", theta:"#2ab8e6", floki:"#f0b90b", bonk:"#f7931a"
 };
 
 function avatarHtml(c, big) {
@@ -624,7 +642,11 @@ function avatarHtml(c, big) {
     let bg;
     if (c.type === "crypto") bg = CRYPTO_C[code] || "#2a2d35";
     else if (code.startsWith("gold")) bg = "linear-gradient(135deg, #b8860b, #ffd700, #fbbf24)";
-    else if (code === "silver") bg = "linear-gradient(135deg, #6b7280, #d1d5db, #9ca3af)";
+    else if (code === "mesghal") bg = "linear-gradient(135deg, #8a6d3b, #e8c07d, #b8860b)";
+    else if (code.startsWith("coin_")) bg = "linear-gradient(135deg, #c9a227, #ffeaa0, #a67c00)";
+    else if (code === "silver" || code === "silver_oz") bg = "linear-gradient(135deg, #6b7280, #d1d5db, #9ca3af)";
+    else if (code === "platinum_oz") bg = "linear-gradient(135deg, #4b5563, #e2e8f0, #94a3b8)";
+    else if (code === "palladium_oz") bg = "linear-gradient(135deg, #57534e, #e7e5e4, #78716c)";
     else bg = FIAT_C[code] || "#2e3a4a";
 
     if (c.flag && /\p{Emoji}/u.test(c.flag)) {
@@ -799,6 +821,21 @@ function marketStatusOf(list) {
     return { text: t("marketFlat"), cls: "" };
 }
 
+/* گروه هر نماد: fiat | gold | crypto — از group می‌آید و برای پاسخ‌های
+   قدیمیِ کش‌شده که group ندارند، به type برمی‌گردد. */
+function groupOf(c) {
+    const g = String(c.group || "");
+    if (g === "fiat" || g === "gold" || g === "crypto") return g;
+    return String(c.type || "fiat") === "crypto" ? "crypto" : "fiat";
+}
+
+function typeLabelOf(c) {
+    const g = groupOf(c);
+    if (g === "crypto") return t("cryptoLabel");
+    if (g === "gold") return t("goldLabel");
+    return t("fiatLabel");
+}
+
 function cardInnerHtml(c) {
     const code = String(c.code || "");
     const codeLc = code.toLowerCase();
@@ -828,7 +865,7 @@ function cardInnerHtml(c) {
         const cls = diff > 0 ? "up" : "dn";
         deltaBubble = '<span class="delta-bubble ' + cls + '">' + sign + diffStr + '</span>';
     }
-    const typeLabel = c.type === "crypto" ? t("cryptoLabel") : t("fiatLabel");
+    const typeLabel = typeLabelOf(c);
 
     // محاسبه سقف/کف ۲۴ ساعته از history
     let high24 = "—", low24 = "—";
@@ -837,7 +874,12 @@ function cardInnerHtml(c) {
         low24 = fmtNum(Math.min(...points));
     }
 
-    const detailsHtml = '<div class="c-det"><div class="d-row"><span>' + t("source") + '</span><b>' + esc(source) + '</b></div><div class="d-row"><span>' + t("chartType") + '</span><b>' + esc(typeLabel) + '</b></div><div class="d-row"><span>' + t("todayHigh") + '</span><b class="mono">' + high24 + '</b></div><div class="d-row"><span>' + t("todayLow") + '</span><b class="mono">' + low24 + '</b></div></div>';
+    const detailsHtml = '<div class="c-det">' +
+        '<div class="d-row"><span>' + t("source") + '</span><b>' + esc(source) + '</b></div>' +
+        '<div class="d-row"><span>' + t("chartType") + '</span><b>' + esc(typeLabel) + '</b></div>' +
+        '<div class="d-row"><span>' + t("symbolCode") + '</span><b>' + esc((c.flag ? c.flag + " " : "") + code.toUpperCase()) + '</b></div>' +
+        '<div class="d-row"><span>' + t("todayHigh") + '</span><b class="mono">' + high24 + '</b></div>' +
+        '<div class="d-row"><span>' + t("todayLow") + '</span><b class="mono">' + low24 + '</b></div></div>';
     const html =
         '<button class="chart-btn" type="button">📈</button>' +
         '<button class="cmp-btn" type="button" title="Compare">📊</button>' +
@@ -923,7 +965,14 @@ function updateCard(card, c) {
 function renderTicker(list) {
     if (!tickerTrack) return;
     if (!list.length) { tickerTrack.innerHTML = ""; return; }
-    const picked = list.slice(0, 12);
+    const picked = [];
+    /* چند نماد پرنوسان + نمادهای شاخص هر گروه (قبلاً فقط ۱۲ ارز اول دیده می‌شد) */
+    [...list]
+        .filter(c => Number.isFinite(Number(c.change)) && Number(c.change) !== 0)
+        .sort((a, b) => Math.abs(Number(b.change)) - Math.abs(Number(a.change)))
+        .slice(0, 5)
+        .forEach(c => picked.push(c));
+    list.forEach(c => { if (picked.length < 18 && !picked.includes(c)) picked.push(c); });
     const html = picked.map(c => {
         const tr = trendOf(c.change);
         const flag = c.flag || "💱";
@@ -935,6 +984,35 @@ function renderTicker(list) {
         '</div>';
     }).join("");
     tickerTrack.innerHTML = html + html;
+}
+
+/* =========================================================
+   نوار پرچم‌ها — یک کلیک تا نمودار هر نماد
+========================================================= */
+
+function renderFlagStrip() {
+    if (!flagStrip) return;
+    const list = currencies.filter(c => groupOf(c) !== "crypto" && c.flag);
+    if (!list.length) { flagStrip.innerHTML = ""; flagStrip.style.display = "none"; return; }
+    flagStrip.style.display = "flex";
+    const sig = list.map(c => c.code + "|" + c.flag + "|" + (Number(c.change) > 0 ? "+" : Number(c.change) < 0 ? "-" : "0")).join(",");
+    if (flagStrip.dataset.sig === sig) return;
+    flagStrip.dataset.sig = sig;
+    flagStrip.innerHTML = list.map(c => {
+        const chg = Number(c.change) || 0;
+        const dir = chg > 0 ? " up" : chg < 0 ? " dn" : "";
+        const label = c.name || c.code;
+        return '<button class="flag-chip' + dir + '" type="button" data-code="' + esc(c.code) + '"' +
+            ' title="' + esc(label + " — " + fmtNum(c.price) + " " + (c.unit || t("unit"))) + '">' +
+            '<span aria-hidden="true">' + esc(c.flag) + '</span>' +
+            '<span class="fc-code">' + esc(String(c.short || c.code).slice(0, 12)) + '</span></button>';
+    }).join("");
+    flagStrip.querySelectorAll(".flag-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            const c = currencies.find(x => x.code === chip.dataset.code);
+            if (c) { openChart(c); haptic(); }
+        });
+    });
 }
 
 /* =========================================================
@@ -1094,8 +1172,8 @@ function renderCompare() {
 
     const ta = trendOf(a.change), tb = trendOf(b.change);
     cmpLegend.innerHTML =
-        '<div class="cmp-legend-item"><span class="clr-box" style="background:' + aColor + '"></span><span class="cl-name">' + esc(a.short || a.code) + '</span><span class="cl-val ' + ta.cls + '">' + esc(ta.text) + '</span></div>' +
-        '<div class="cmp-legend-item"><span class="clr-box" style="background:' + bColor + '"></span><span class="cl-name">' + esc(b.short || b.code) + '</span><span class="cl-val ' + tb.cls + '">' + esc(tb.text) + '</span></div>';
+        '<div class="cmp-legend-item"><span class="clr-box" style="background:' + aColor + '"></span><span class="cl-flag">' + esc(a.flag || "💱") + '</span><span class="cl-name">' + esc(a.short || a.code) + '</span><span class="cl-val ' + ta.cls + '">' + esc(ta.text) + '</span></div>' +
+        '<div class="cmp-legend-item"><span class="clr-box" style="background:' + bColor + '"></span><span class="cl-flag">' + esc(b.flag || "💱") + '</span><span class="cl-name">' + esc(b.short || b.code) + '</span><span class="cl-val ' + tb.cls + '">' + esc(tb.text) + '</span></div>';
 
     const aHigh = aPts.length ? Math.max(...aPts) : 0;
     const bHigh = bPts.length ? Math.max(...bPts) : 0;
@@ -1107,8 +1185,8 @@ function renderCompare() {
 
     cmpTable.innerHTML =
         '<div class="header">—</div>' +
-        '<div class="header">' + esc(a.short || a.code) + '</div>' +
-        '<div class="header">' + esc(b.short || b.code) + '</div>' +
+        '<div class="header">' + esc((a.flag ? a.flag + " " : "") + (a.short || a.code)) + '</div>' +
+        '<div class="header">' + esc((b.flag ? b.flag + " " : "") + (b.short || b.code)) + '</div>' +
         '<div>قیمت</div><div class="val">' + fmtNum(a.price) + '</div><div class="val">' + fmtNum(b.price) + '</div>' +
         '<div>تغییر</div><div class="val ' + ta.cls + '">' + Number(a.change).toFixed(2) + '%</div><div class="val ' + tb.cls + '">' + Number(b.change).toFixed(2) + '%</div>' +
         '<div>سقف</div><div class="val">' + fmtNum(aHigh) + '</div><div class="val">' + fmtNum(bHigh) + '</div>' +
@@ -1211,6 +1289,7 @@ function applyFilter() {
         const movers = document.getElementById("moversSection");
         if (movers) movers.style.display = "none";
         if (volatilitySection) volatilitySection.style.display = "none";
+        if (flagStrip) flagStrip.style.display = "none";
         if (newsSection) newsSection.style.display = "block";
         if (emptyState) emptyState.classList.remove("on");
         loadNews();
@@ -1222,10 +1301,11 @@ function applyFilter() {
     if (statusBar) statusBar.style.display = "flex";
     const movers = document.getElementById("moversSection");
     if (movers) movers.style.display = "grid";
+    if (flagStrip && flagStrip.children.length) flagStrip.style.display = "flex";
 
     let list = currencies;
     if (activeCategory === "watchlist") list = list.filter(c => isWatched(c.code));
-    else if (activeCategory !== "all") list = list.filter(c => (c.type || "fiat") === activeCategory);
+    else if (activeCategory !== "all") list = list.filter(c => groupOf(c) === activeCategory);
 
     if (q) list = list.filter(c => {
         const code = String(c.code || "").toLowerCase();
@@ -1318,7 +1398,7 @@ function renderModal() {
     const name = c.name || code.toUpperCase();
     const price = c.price ?? "";
     const trend = trendOf(c.change);
-    const typeLabel = c.type === "crypto" ? t("cryptoLabel") : t("fiatLabel");
+    const typeLabel = typeLabelOf(c);
     const watched = isWatched(code.toLowerCase());
     const chartHtml = bigChartSvg(liveChartData, trend.cls, currentTimeframe === "1d" || currentTimeframe === "7d", timeframeLoading);
 
@@ -1485,6 +1565,7 @@ function handleSnapshot(list, updatedAt) {
 
     applyFilter();
     renderTicker(currencies);
+    renderFlagStrip();
     renderTopMovers();
     renderVolatility();
 
@@ -1659,9 +1740,10 @@ function checkPriceAlerts() {
         if (hit) {
             a.triggered = true; triggered = true;
             playBeep();
-            toast("🔔 " + (c.name || c.code) + " — " + fmtNum(price), "success");
+            const mark = c.flag ? c.flag + " " : "";
+            toast("🔔 " + mark + (c.name || c.code) + " — " + fmtNum(price), "success");
             if ("Notification" in window && Notification.permission === "granted") {
-                try { new Notification(`🔔 ${c.name || c.code}`, { body: `${a.direction === "above" ? t("dirAbove") : t("dirBelow")} ${fmtNum(a.target)}\n${fmtNum(price)} ${t("unit")}`, tag: a.id }); } catch (e) {}
+                try { new Notification(`${mark}🔔 ${c.name || c.code}`, { body: `${a.direction === "above" ? t("dirAbove") : t("dirBelow")} ${fmtNum(a.target)}\n${fmtNum(price)} ${t("unit")}`, tag: a.id }); } catch (e) {}
             }
         }
     });
@@ -2400,9 +2482,44 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* =========================================================
+   SPLASH — انیمیشن ورود به برنامه
+   پرده در HTML و CSS بالا ساخته شده؛ اینجا فقط زمان‌بندی و حذف آن است.
+========================================================= */
+
+let splashDone = false;
+
+function finishSplash() {
+    if (splashDone) return;
+    splashDone = true;
+    const el = $("splash");
+    document.body.classList.add("booted");   // بخش‌های اپ با تأخیر کوچک وارد می‌شوند
+    if (!el) return;
+    el.classList.add("out");
+    /* کاربر کم‌حرکت: نه محوی هست و نه دلیلی برای نگه‌داشتن گره در DOM */
+    setTimeout(() => el.remove(), prefersReducedMotion.matches ? 0 : 700);
+}
+
+function initSplash() {
+    const el = $("splash");
+    if (!el) { document.body.classList.add("booted"); return; }
+    // کاربر کم‌حرکت: پرده تقریباً بلافاصله کنار می‌رود
+    const hold = prefersReducedMotion.matches ? 200 : 1150;
+    const timer = setTimeout(finishSplash, hold);
+    const skip = () => { clearTimeout(timer); finishSplash(); };
+    el.addEventListener("click", skip);
+    ["pointerdown", "keydown", "touchstart"].forEach(ev =>
+        window.addEventListener(ev, skip, { once: true, passive: true }));
+    window.addEventListener("load", () => {
+        // اگر صفحه سریع بارگذاری شد، لازم نیست پرده تا آخر بماند
+        if (performance.now() > 700) skip();
+    }, { once: true });
+}
+
+/* =========================================================
    INIT
 ========================================================= */
 
+initSplash();
 setPalette(currentPalette);
 setTheme(currentTheme);
 applyAutoDark();

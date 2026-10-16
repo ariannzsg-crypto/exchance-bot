@@ -4,7 +4,7 @@
      • /api/market و /api/news و /api/history: network-first با فالبک به آخرین پاسخ کش‌شده
        (برای نمایش آخرین قیمت‌ها در حالت آفلاین)
 */
-const VERSION = "ex-v1";
+const VERSION = "ex-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const API_CACHE = `${VERSION}-api`;
 

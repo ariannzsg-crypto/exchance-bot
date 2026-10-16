@@ -17,8 +17,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/design-tokens.css">
+<!-- فونت غیرمسدودکننده: مرورگر تا لود شدن یک CSS بیرونی، اجرای اسکریپت‌های بعدی را
+     متوقف می‌کند؛ اگر Google Fonts کند یا فیلتر باشد، انیمیشن ورود و خود اپ
+     چند ثانیه معطل می‌ماند. پس فونت با media=print گرفته و بعد از لود، همه‌جا فعال
+     می‌شود (بدون جاوااسکریپت هم نسخه‌ی noscript موجود است). -->
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+</noscript>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { min-height: 100%; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -509,6 +517,7 @@ body.dark .cmp-chart { background: rgba(255,255,255,0.05); }
 .cmp-legend-item { padding: 10px 14px; border-radius: var(--radius-lg); background: rgba(255,255,255,0.4); border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 8px; font-size: 12px; }
 body.dark .cmp-legend-item { background: rgba(255,255,255,0.06); }
 .cmp-legend-item .clr-box { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cmp-legend-item .cl-flag { font-size: 14px; line-height: 1; flex-shrink: 0; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', var(--font-sans); }
 .cmp-legend-item .cl-name { flex: 1; font-weight: var(--font-bold); }
 .cmp-legend-item .cl-val { font-family: var(--font-mono); font-weight: var(--font-bold); font-size: 11px; }
 .cmp-stats-table { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); background: var(--glass-border); }
@@ -871,9 +880,188 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     html { scroll-behavior: auto; }
     .card:hover, .news-card:hover, .mover-row:hover, .qa-btn:hover { transform: none; }
 }
+
+/* =========================================================
+   انیمیشن ورود به برنامه (Splash)
+   ========================================================= */
+.splash {
+    position: fixed; inset: 0; z-index: 3000; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    padding: calc(var(--space-6) + var(--safe-top)) var(--space-4) calc(var(--space-6) + var(--safe-bottom));
+    background-color: var(--bg-base);
+    background-image:
+        radial-gradient(circle at 20% 12%, var(--c1), transparent 55%),
+        radial-gradient(circle at 84% 18%, var(--c2), transparent 52%),
+        radial-gradient(circle at 50% 92%, var(--c4), transparent 58%),
+        radial-gradient(circle at 12% 80%, var(--c5), transparent 52%);
+    transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out), visibility 0s linear 420ms;
+    /* جایگزین ایمن: اگر جاوااسکریپت اجرا نشود، پرده خودش بعد از ۷ ثانیه کنار می‌رود */
+    animation: splashSafety 1ms 7s forwards;
+}
+.splash.out { opacity: 0; transform: scale(1.05); visibility: hidden; pointer-events: none; }
+@keyframes splashSafety { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+.splash-inner {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    text-align: center; animation: splashPop 760ms var(--ease-spring-2) both;
+}
+@keyframes splashPop { from { opacity: 0; transform: translateY(26px) scale(0.94); } to { opacity: 1; transform: none; } }
+
+.splash-coin { position: relative; width: 186px; height: 186px; display: flex; align-items: center; justify-content: center; }
+.splash-rail {
+    position: absolute; inset: 20px; border-radius: var(--radius-full);
+    border: 1px dashed var(--glass-border-2);
+    box-shadow: inset 0 0 44px var(--accent-glow);
+    animation: splashRail 6s var(--ease-smooth) infinite;
+}
+@keyframes splashRail { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+.splash-orbit { position: absolute; inset: 0; animation: splashSpin 16s linear infinite; }
+@keyframes splashSpin { to { transform: rotate(360deg); } }
+@keyframes splashSpinBack { to { transform: rotate(-360deg); } }
+.splash-orbit .orb {
+    position: absolute; top: 50%; left: 50%;
+    width: 36px; height: 36px; margin: -18px 0 0 -18px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-full);
+    background: var(--glass-tint-3); border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    transform: rotate(var(--a)) translate(80px) rotate(calc(-1 * var(--a)));
+}
+.splash-orbit .orb-in {
+    display: block; font-style: normal; line-height: 1; font-size: 19px;
+    font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', var(--font-sans);
+    animation: splashSpinBack 16s linear infinite;
+}
+.splash-badge {
+    position: relative; z-index: 2; width: 78px; height: 78px; border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; line-height: 1; color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--pink-9) 55%, var(--cyan-9));
+    box-shadow: 0 14px 44px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.45);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    animation: splashBadge 2.6s var(--ease-smooth) infinite;
+}
+@keyframes splashBadge { 0%, 100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(1.08) rotate(3deg); } }
+
+.splash-title {
+    font-size: 29px; font-weight: var(--font-extrabold); letter-spacing: 3px; line-height: 1.1;
+    background: linear-gradient(120deg, var(--accent), var(--pink-9), var(--cyan-9), var(--accent));
+    background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: splashShine 3.2s linear infinite;
+}
+@keyframes splashShine { to { background-position: 300% 50%; } }
+.splash-sub { font-size: var(--text-xs); color: var(--text-secondary); font-weight: var(--font-semibold); }
+
+.splash-bar { width: 190px; height: 5px; border-radius: var(--radius-full); background: var(--flat-bg); overflow: hidden; }
+.splash-bar i {
+    display: block; height: 100%; width: 42%; border-radius: var(--radius-full);
+    background: linear-gradient(90deg, var(--accent), var(--pink-9));
+    animation: splashLoad 1.5s var(--ease-out) infinite;
+}
+@keyframes splashLoad { 0% { transform: translateX(-130%); } 100% { transform: translateX(330%); } }
+
+.splash-flags { display: flex; align-items: center; gap: 7px; font-size: 17px; line-height: 1;
+    font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', var(--font-sans); }
+.splash-flags span { display: block; animation: splashFloat 2.4s var(--ease-smooth) infinite; }
+.splash-flags span:nth-child(2) { animation-delay: 0.18s; }
+.splash-flags span:nth-child(3) { animation-delay: 0.36s; }
+.splash-flags span:nth-child(4) { animation-delay: 0.54s; }
+.splash-flags span:nth-child(5) { animation-delay: 0.72s; }
+.splash-flags span:nth-child(6) { animation-delay: 0.9s; }
+.splash-flags span:nth-child(7) { animation-delay: 1.08s; }
+.splash-flags span:nth-child(8) { animation-delay: 1.26s; }
+@keyframes splashFloat { 0%, 100% { transform: translateY(0); opacity: 0.75; } 50% { transform: translateY(-7px); opacity: 1; } }
+
+/* ورود بخش‌های اپ بعد از پایان پرده (هر بخش با تأخیر کوچک) */
+body.booted .app > * { animation: bootUp 540ms var(--ease-spring-2) both; }
+body.booted .app > *:nth-child(1) { animation-delay: 30ms; }
+body.booted .app > *:nth-child(2) { animation-delay: 70ms; }
+body.booted .app > *:nth-child(3) { animation-delay: 110ms; }
+body.booted .app > *:nth-child(4) { animation-delay: 150ms; }
+body.booted .app > *:nth-child(5) { animation-delay: 185ms; }
+body.booted .app > *:nth-child(6) { animation-delay: 220ms; }
+body.booted .app > *:nth-child(7) { animation-delay: 255ms; }
+body.booted .app > *:nth-child(8) { animation-delay: 285ms; }
+body.booted .app > *:nth-child(n+9) { animation-delay: 310ms; }
+@keyframes bootUp { from { opacity: 0; transform: translateY(18px) scale(0.992); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 420px) {
+    .splash-coin { width: 162px; height: 162px; }
+    .splash-orbit .orb { transform: rotate(var(--a)) translate(70px) rotate(calc(-1 * var(--a))); }
+    .splash-title { font-size: 25px; letter-spacing: 2px; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+    .splash-flags { display: none; }
+    .splash-coin { width: 138px; height: 138px; }
+    .splash-orbit .orb { transform: rotate(var(--a)) translate(58px) rotate(calc(-1 * var(--a))); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .splash-inner, .splash-title, .splash-badge, .splash-rail, .splash-orbit,
+    .splash-orbit .orb-in, .splash-bar i, .splash-flags span {
+        animation: none !important;
+    }
+    /* بدون محوی: پرده باید «یک‌باره» کنار برود، نه با یک انتقال ۴۲۰ms */
+    .splash { animation: splashSafety 1ms 1.6s forwards !important; transition: none; }
+    body.booted .app > * { animation: none !important; }
+}
+
+/* =========================================================
+   نوار پرچم‌ها (دسترسی سریع به ارزها و فلزات)
+   ========================================================= */
+.flag-strip {
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; padding: 4px 2px 8px; margin-bottom: var(--space-3);
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.flag-strip::-webkit-scrollbar { display: none; }
+.flag-chip {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 11px; border-radius: var(--radius-full);
+    background: var(--bg-surface); border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    font-size: 15px; line-height: 1; white-space: nowrap;
+    transition: all var(--dur-normal) var(--ease-spring);
+    font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', var(--font-sans);
+}
+.flag-chip:hover { transform: translateY(-2px) scale(1.04); background: var(--bg-surface-2); box-shadow: var(--shadow-md); }
+.flag-chip:active { transform: scale(0.95); }
+.flag-chip .fc-code { font-size: 10px; font-weight: var(--font-bold); color: var(--text-secondary); font-family: var(--font-mono); }
+.flag-chip.up .fc-code { color: var(--up); }
+.flag-chip.dn .fc-code { color: var(--down); }
+@media (max-width: 640px) { .flag-chip { padding: 6px 9px; font-size: 14px; } }
 </style>
 </head>
 <body data-theme="aurora" lang="fa" dir="rtl">
+
+<!-- انیمیشن ورود: تا آماده شدن اپ، کل صفحه را می‌پوشاند -->
+<div class="splash" id="splash" role="status" aria-live="polite">
+    <div class="splash-inner">
+        <div class="splash-coin">
+            <div class="splash-rail" aria-hidden="true"></div>
+            <div class="splash-orbit" aria-hidden="true">
+                <span class="orb" style="--a:0deg"><i class="orb-in">🇺🇸</i></span>
+                <span class="orb" style="--a:36deg"><i class="orb-in">🇪🇺</i></span>
+                <span class="orb" style="--a:72deg"><i class="orb-in">🥇</i></span>
+                <span class="orb" style="--a:108deg"><i class="orb-in">🇬🇧</i></span>
+                <span class="orb" style="--a:144deg"><i class="orb-in">🇹🇷</i></span>
+                <span class="orb" style="--a:180deg"><i class="orb-in">🇦🇪</i></span>
+                <span class="orb" style="--a:216deg"><i class="orb-in">₿</i></span>
+                <span class="orb" style="--a:252deg"><i class="orb-in">🇨🇳</i></span>
+                <span class="orb" style="--a:288deg"><i class="orb-in">🇯🇵</i></span>
+                <span class="orb" style="--a:324deg"><i class="orb-in">🇷🇺</i></span>
+            </div>
+            <div class="splash-badge" aria-hidden="true">🪙</div>
+        </div>
+        <div class="splash-title">EXCHANCE</div>
+        <div class="splash-sub" data-i18n="splashSub">قیمت لحظه‌ای ارز، طلا و رمزارز</div>
+        <div class="splash-bar" aria-hidden="true"><i></i></div>
+        <div class="splash-flags" aria-hidden="true">
+            <span>🇺🇸</span><span>🇪🇺</span><span>🇬🇧</span><span>🇦🇪</span>
+            <span>🥇</span><span>🪙</span><span>₿</span><span>💠</span>
+        </div>
+    </div>
+</div>
 
 <a class="skip-link" href="#mainContent">پرش به محتوای اصلی</a>
 
@@ -933,6 +1121,8 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
 
     <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
 
+    <div class="flag-strip" id="flagStrip" data-i18n-aria="flagStripAria" role="group"></div>
+
     <div class="quick-actions">
         <button class="qa-btn primary" id="qaCompare" type="button">📊 مقایسه</button>
         <button class="qa-btn" id="qaGold" type="button">🥇 محاسبه طلا</button>
@@ -971,8 +1161,9 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     <div class="tabs" role="group" data-i18n-aria="filterGroup">
         <button class="tab active" data-category="all" type="button" aria-pressed="true" data-i18n="tabAll">همه</button>
         <button class="tab" data-category="watchlist" type="button" aria-pressed="false" data-i18n="tabWatch" data-i18n-aria="tabWatchAria">⭐</button>
-        <button class="tab" data-category="fiat" type="button" aria-pressed="false" data-i18n="tabFiat">ارز و طلا</button>
-        <button class="tab" data-category="crypto" type="button" aria-pressed="false" data-i18n="tabCrypto">رمزارز</button>
+        <button class="tab" data-category="fiat" type="button" aria-pressed="false" data-i18n="tabFiat">💵 ارز</button>
+        <button class="tab" data-category="gold" type="button" aria-pressed="false" data-i18n="tabGold">🥇 طلا</button>
+        <button class="tab" data-category="crypto" type="button" aria-pressed="false" data-i18n="tabCrypto">₿ رمزارز</button>
         <button class="tab" data-category="news" type="button" aria-pressed="false" data-i18n="tabNews">📰 اخبار</button>
     </div>
 
@@ -1242,6 +1433,6 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <script src="/config.js?v=1"></script>
-<script src="/app.js?v=81"></script>
+<script src="/app.js?v=82"></script>
 </body>
 </html>

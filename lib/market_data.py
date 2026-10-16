@@ -27,17 +27,25 @@ def _row_name(row):
     return ""
 
 
-def _row_matches(row, aliases):
-    """تطبیق دقیق یا با مرز کلمه (نه زیررشته‌ی آزاد)."""
+def _row_matches(row, aliases, strict=()):
+    """تطبیق دقیق یا با مرز کلمه (نه زیررشته‌ی آزاد).
+
+    `strict` نام‌هایی هستند که فقط تطبیق دقیق قبول می‌کنند. لازم است چون نام کوتاهی
+    مثل «دلار» با قاعده‌ی پیشوندی، «دلار نیوزیلند» را هم می‌گرفت و اگر آن ردیف
+    بالا‌تر از ردیف «دلار» بود، قیمت غلطی برای دلار آمریکا ثبت می‌شد.
+    """
     name = _row_name(row).lower()
     if not name:
         return False
+    exact_only = {clean_text(a).lower() for a in strict}
     for alias in aliases:
         alias = clean_text(alias).lower()
         if not alias:
             continue
         if name == alias:
             return True
+        if alias in exact_only:
+            continue
         # مثل «ین ژاپن (100 ین)» یا «گرم نقره ۹۹۹»
         if name.startswith(alias + " ") or name.startswith(alias + "("):
             return True
@@ -99,7 +107,7 @@ def _fetch_fiat():
         found, change = None, 0.0
         excludes = info.get("tgju_exclude", [])
         for row in rows:
-            if not _row_matches(row, info.get("tgju", [])):
+            if not _row_matches(row, info.get("tgju", []), info.get("tgju_strict", ())):
                 continue
             name = _row_name(row).lower()
             if any(clean_text(e).lower() in name for e in excludes):
@@ -111,13 +119,14 @@ def _fetch_fiat():
             break
         if not found:
             continue
-        # TGJU فقط ین را «(100 ین)» قیمت می‌دهد؛ وون و بقیه به ازای یک واحد هستند
-        if code == "jpy":
-            found /= 100
+        # scale ریال TGJU را به واحد نمایشی تبدیل می‌کند:
+        #   ارزها ۰٫۱ (ریال→تومان)، «ین ژاپن (100 ین)» ۰٫۰۰۱، انس‌ها ۱ (خودشان دلاری)
+        price = found * float(info.get("scale", 0.1))
         result[code] = {
             "code": code, "name": info["name"], "short": info["short"],
-            "flag": info["flag"], "price": found / 10, "change": change,
-            "unit": "تومان", "source": "TGJU", "type": "fiat",
+            "flag": info["flag"], "price": price, "change": change,
+            "unit": info.get("unit", "تومان"), "source": "TGJU", "type": "fiat",
+            "group": info.get("group", "fiat"),
         }
     return result
 
@@ -152,6 +161,7 @@ def _fetch_crypto(usd_toman):
             "flag": info["flag"], "price": float(usd_price) * float(usd_toman),
             "usd_price": float(usd_price), "change": float(change or 0),
             "unit": "تومان", "source": "CoinGecko + TGJU", "type": "crypto",
+            "group": info.get("group", "crypto"),
         }
     return result
 

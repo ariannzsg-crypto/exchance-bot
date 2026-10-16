@@ -144,7 +144,15 @@ def test_currencies_without_a_valid_row_are_omitted(tgju):
     assert "eur" not in tgju
     assert "pound" not in tgju
     assert "gbp" not in tgju
-    assert set(tgju) == {"usd", "jpy", "cny", "gold18", "silver"}
+    assert set(tgju) == {"usd", "jpy", "cny", "gold18", "silver", "silver_oz"}
+
+
+def test_silver_ounce_keeps_its_dollar_price(tgju):
+    # «انس نقره» دلاری است؛ نه با گرم نقره قاطی می‌شود و نه با ضریب ریال→تومان کوچک
+    assert tgju["silver_oz"]["price"] == pytest.approx(888888888.0)
+    assert tgju["silver_oz"]["unit"] == "دلار"
+    assert tgju["silver_oz"]["group"] == "gold"
+    assert tgju["silver"]["price"] == pytest.approx(18888.0)
 
 
 def test_gold_excludes_shekels_and_other_variants(tgju):
