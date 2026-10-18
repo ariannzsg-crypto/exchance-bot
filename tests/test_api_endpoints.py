@@ -364,12 +364,13 @@ def test_python_entrypoint_exists_in_a_default_location():
     entry = ROOT / "api" / "index.py"
     assert entry.is_file(), "ورودی پیش‌فرض ورسل (api/index.py) وجود ندارد"
 
-    # پریست پایتون اسم مکان پیش‌فرض را هم قبول نمی‌کند؛ ورسل خودش گفته که راه
-    # قطعی، اعلام entrypoint در pyproject.toml است. اگر این خط برود، بیلد با
-    # PYTHON_ENTRYPOINT_NOT_FOUND می‌میرد.
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert re.search(r'^\s*entrypoint\s*=\s*"api\.index:handler"', pyproject, re.M), \
-        "pyproject.toml باید entrypoint = \"api.index:handler\" را اعلام کند"
+    # pyproject.toml عمداً وجود ندارد: در مدل فایلی (preset = Other) لازم نیست و
+    # اگر بدون جدول `project` ساخته شود، نصب پایتون ورسل با `uv lock` می‌میرد
+    # (error: No `project` table found). پس اگر روزی اضافه شد، باید کامل باشد.
+    pyproject = ROOT / "pyproject.toml"
+    if pyproject.is_file():
+        assert re.search(r"^\[project\]", pyproject.read_text(encoding="utf-8"), re.M), \
+            "pyproject.toml بدون جدول [project] نصب پایتون ورسل را می‌شکند"
     assert re.search(r"^class\s+handler\s*\(", entry.read_text(encoding="utf-8"), re.M), \
         "ورودی ورسل باید کلاس سطح‌بالای `handler` داشته باشد"
 

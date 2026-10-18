@@ -178,12 +178,13 @@ npm run android:assets
 1. ریپو را در GitHub بساز و این پوشه را push کن.
 2. در ورسل → **Add New → Project** و انتخاب همان ریپو.
 3. Framework Preset را روی **Other** بگذار (پروژه build ندارد؛ خروجی استاتیک از `web/` سرو می‌شود).
-   اگر پریست را عوض نکردی هم بیلد می‌شود: `pyproject.toml` خودش
-   `[tool.vercel] entrypoint = "api.index:handler"` را اعلام کرده و `api/index.py`
-   مسیرهای `/api/...` را به همان handler واقعیِ هر اندپوینت می‌سپارد؛ خطای
-   `PYTHON_ENTRYPOINT_NOT_FOUND` همین‌طور رفع شده است. (با این پریست، مدل «یک
-   فانکشن برای همه‌ی `/api`» می‌شود؛ بلوک `functions` در `vercel.json` برای همین
-   برداشته شد، چون با آن ورسل با `unused_function` می‌ایستد.)
+   این تنظیم مهم است: اگر ورسل پروژه را **Python** تشخیص بدهد، بیلد با
+   `PYTHON_ENTRYPOINT_NOT_FOUND` می‌میرد، چون پریست پایتون کل ترافیک را به یک
+   entrypoint می‌برد و `api/*.py` را فانکشن جدا نمی‌کند. (آن حالت را با
+   `pyproject.toml` هم می‌شود زنده کرد، ولی ورسل بعدش `uv lock` می‌زند و بدون
+   جدول `[project]` می‌شکند؛ پس عمداً چنین فایلی در ریپو نیست.) با پریست Other
+   هر فایل `api/*.py` یک فانکشن جدا می‌شود و `api/index.py` هم مثل بقیه کار
+   می‌کند (فهرست اندپوینت‌ها روی `/api`).
 4. **هیچ متغیر محیطی لازم نیست.** فقط Deploy را بزن.
 5. بعد از دیپلوی، این آدرس‌ها را چک کن: `/`، `/api/market`، `/api/history?code=btc`،
    `/api/news`، `/api/fear_greed`، `/api/chart?code=usd`.
