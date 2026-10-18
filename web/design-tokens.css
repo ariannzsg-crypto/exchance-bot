@@ -152,32 +152,70 @@
     --sh-sm: var(--shadow-sm);
     --sh: var(--shadow-lg);
     --sh-lg: var(--shadow-xl);
+
+    /* ===== VAULT (الهام از هند‌آف «Vault — Crypto Wallet») =====
+       زبان تازه‌ی طراحی: شیشه‌ی نازک و بی‌رنگ روی زمینه‌ی تیره، اعداد مونو با
+       ارقام جدولی، گرادیان برند بنفش→فیروزه‌ای، و چیپ‌های ریز گوشه‌گرد به‌جای
+       برچسب‌های رنگی. این‌ها روی سیستم Liquid Glass سوار می‌شوند، جایگزینش
+       نمی‌شوند: تم روشن و پالت‌های موجود دست‌نخورده می‌مانند. */
+    --vault-bg: #07070d;
+    --vault-panel: rgba(255,255,255,0.04);
+    --vault-panel-2: rgba(255,255,255,0.06);
+    --vault-stroke: rgba(255,255,255,0.08);
+    --vault-divider: rgba(255,255,255,0.05);
+    --vault-selected: rgba(255,255,255,0.08);
+    --vault-text: #f4f4f8;
+    --vault-mute: #8a8a98;
+    --vault-violet: #8b5cf6;
+    --vault-violet-light: #a78bfa;
+    --vault-cyan: #38bdf8;
+    --vault-green: #4ade80;
+    --vault-red: #f87171;
+    --vault-hero-end: #c0bce0;
+    --vault-radius-chip: 6px;
+    --vault-radius-card: 22px;
+    --brand-gradient: linear-gradient(135deg, #8b5cf6, #38bdf8);
+    --vault-glow: 0 4px 20px rgba(139,92,246,0.40);
+    --vault-glow-lg: 0 8px 30px rgba(139,92,246,0.40);
+    /* چیپ تغییر قیمت: پس‌زمینه و حاشیه‌ی هم‌رنگ با متن */
+    --chip-up-bg: rgba(74,222,128,0.15);
+    --chip-up-edge: rgba(74,222,128,0.25);
+    --chip-down-bg: rgba(248,113,113,0.12);
+    --chip-down-edge: rgba(248,113,113,0.20);
+    --chip-flat-bg: rgba(255,255,255,0.06);
+    --chip-flat-edge: rgba(255,255,255,0.10);
 }
 
 /* ===== DARK THEME ===== */
 body.dark {
-    --glass-tint-1: rgba(40,35,65,0.42);
-    --glass-tint-2: rgba(45,40,75,0.58);
-    --glass-tint-3: rgba(50,45,85,0.72);
+    /* شیشه‌ی تیره‌ی Vault: لایه‌ی نازک و بی‌رنگ (۴٪) روی زمینه‌ی #07070d،
+       با حاشیه‌ی ۸٪ — جای تینت بنفش سنگین قبلی. */
+    --glass-tint-1: var(--vault-panel);
+    --glass-tint-2: var(--vault-panel-2);
+    --glass-tint-3: rgba(255,255,255,0.10);
     --glass-highlight: rgba(255,255,255,0.14);
-    --glass-border: rgba(255,255,255,0.14);
-    --glass-border-2: rgba(255,255,255,0.22);
+    --glass-border: var(--vault-stroke);
+    --glass-border-2: rgba(255,255,255,0.14);
 
-    --bg-base: #0e0a1e;
+    --bg-base: var(--vault-bg);
     --bg-surface: var(--glass-tint-1);
     --bg-surface-2: var(--glass-tint-2);
     --bg-elevated: var(--glass-tint-3);
 
-    --text-primary: #f0f0fa;
-    --text-secondary: #a0a0be;   /* 7.6:1 */
-    --text-tertiary: #8a8ab0;    /* 5.9:1 — قبلاً #6b6b85 با 3.8:1 */
+    --text-primary: var(--vault-text);
+    --text-secondary: #a5a5b8;   /* 8.2:1 روی #07070d */
+    --text-tertiary: var(--vault-mute);   /* 5.6:1 — گذر از AA */
 
-    --up: var(--green-9);
-    --up-bg: rgba(48,164,108,0.20);
-    --down: var(--red-9);
-    --down-bg: rgba(229,72,77,0.20);
-    --flat: #8a8aa8;
-    --flat-bg: rgba(138,138,168,0.15);
+    /* سبز/قرمز روشن‌ترِ هند‌آف روی پس‌زمینه‌ی تیره */
+    --up: var(--vault-green);
+    --down: var(--vault-red);
+    --flat: var(--vault-mute);
+    --up-bg: var(--chip-up-bg);
+    --down-bg: var(--chip-down-bg);
+    --flat-bg: var(--chip-flat-bg);
+
+    --accent: var(--vault-violet);
+    --accent-glow: rgba(139,92,246,0.40);
 
     --shadow-sm: 0 2px 6px rgba(0,0,0,0.30), 0 6px 20px rgba(0,0,0,0.40);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.35), 0 12px 36px rgba(0,0,0,0.45);
@@ -256,9 +294,9 @@ body.dark[data-theme="paper"] {
         --text-secondary: #c9c9de;
         --text-tertiary: #b0b0c8;
         --glass-border: rgba(255,255,255,0.34);
-        --glass-tint-1: rgba(30,26,50,0.86);
-        --glass-tint-2: rgba(34,30,56,0.92);
-        --glass-tint-3: rgba(38,34,62,0.96);
+        --glass-tint-1: rgba(8,8,14,0.86);
+        --glass-tint-2: rgba(12,12,18,0.92);
+        --glass-tint-3: rgba(16,16,24,0.96);
     }
     .c-foot, .news-time, .d-row { font-weight: var(--font-semibold); }
 }
@@ -271,9 +309,9 @@ body.dark[data-theme="paper"] {
         --glass-tint-3: rgba(255,255,255,0.99);
     }
     body.dark {
-        --glass-tint-1: rgba(26,22,44,0.94);
-        --glass-tint-2: rgba(30,26,50,0.97);
-        --glass-tint-3: rgba(34,30,56,0.99);
+        --glass-tint-1: rgba(12,12,18,0.94);
+        --glass-tint-2: rgba(16,16,24,0.97);
+        --glass-tint-3: rgba(20,20,30,0.99);
     }
 }
 
@@ -304,3 +342,38 @@ body.dark[data-theme="paper"] {
 /* اسکرول‌بار نازک و هماهنگ با تم */
 * { scrollbar-width: thin; scrollbar-color: var(--gray-8) transparent; }
 body.dark * { scrollbar-color: rgba(255,255,255,0.22) transparent; }
+
+/* =========================================================
+   VAULT NUMERALS — همه‌ی عددها با ارقام جدولی
+   =========================================================
+   در هند‌آف هر قیمت، درصد و آدرس با JetBrains Mono نوشته می‌شود؛ همین باعث
+   می‌شود عددهای در حال تغییر نلرزند (ارقام جدولی) و چشم بتواند ستون‌ها را
+   مقایسه کند. اینجا هر چیزی که عدد نشان می‌دهد همین رفتار را می‌گیرد، حتی
+   وقتی فونتش مونو نیست. */
+.mono,
+.c-price .vl, .m-price .vl, .c-chg, .m-price .chg, .delta-bubble,
+.mover-row .mr-chg, .vol-item .vi-val, .c-changes-row .crv,
+.stat .val, .m-stat .vl, .c-usd b, .fng-bar .fng-val,
+.port-item .pnl, .conv-result-value, .gold-out {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "cv01" 1;
+}
+
+/* عدد به‌سبک هند‌آف: مونو، کمی جمع‌تر، با گرادیان سفید→یاسی (فقط در تم تیره) */
+body.dark .c-price .vl,
+body.dark .m-price .vl {
+    font-family: var(--font-mono);
+    font-weight: var(--font-semibold);
+    letter-spacing: -0.02em;
+}
+body.dark .m-price .vl {
+    background: linear-gradient(180deg, #fff 0%, var(--vault-hero-end) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: var(--vault-text);
+}
+/* واحد پول کنار عدد بزرگ، کم‌رنگ و کوچک — مثل «¢» در هند‌آف */
+body.dark .m-price .un,
+body.dark .c-price .un {
+    font-family: var(--font-mono);
+    font-weight: var(--font-normal);
+}

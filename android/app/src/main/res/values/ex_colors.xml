@@ -1,13 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!-- رنگ‌های بومی ویجت و اعلان. نام‌ها با پیشوند ex_ هستند تا با پالت
-     کتابخانه‌ی Capacitor (colorPrimary و…) قاطی نشوند. -->
+     کتابخانه‌ی Capacitor (colorPrimary و…) قاطی نشوند.
+
+     مقادیر از زبان طراحی رابط وب (design-tokens.css → بخش VAULT) آمده‌اند تا
+     ویجت روی صفحه‌ی خانه با همان چیزی که داخل اپ دیده می‌شود یکی باشد:
+     زمینه‌ی خنثی #07070D، شیشه‌ی نازک، متن #F4F4F8، سبز/قرمز روشن‌ترِ تم تیره. -->
 <resources>
-    <color name="ex_card_bg">#12101F</color>
-    <color name="ex_card_border">#2A2740</color>
-    <color name="ex_text">#F4F2FF</color>
-    <color name="ex_text_dim">#A9A4C7</color>
-    <color name="ex_up">#35D07F</color>
-    <color name="ex_down">#FF5C77</color>
+    <color name="ex_card_bg">#07070D</color>
+    <color name="ex_card_border">#1C1C26</color>
+    <color name="ex_text">#F4F4F8</color>
+    <color name="ex_text_dim">#8A8A98</color>
+    <color name="ex_up">#4ADE80</color>
+    <color name="ex_down">#F87171</color>
     <color name="ex_accent">#8B5CF6</color>
-    <color name="ex_button_bg">#1F1C33</color>
+    <color name="ex_button_bg">#14141C</color>
 </resources>

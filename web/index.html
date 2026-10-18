@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f8f5ff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e0a1e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#07070d" media="(prefers-color-scheme: dark)">
 <meta name="format-detection" content="telephone=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/design-tokens.css">
+<link rel="stylesheet" href="/design-tokens.css?v=2">
 <!-- فونت غیرمسدودکننده: مرورگر تا لود شدن یک CSS بیرونی، اجرای اسکریپت‌های بعدی را
      متوقف می‌کند؛ اگر Google Fonts کند یا فیلتر باشد، انیمیشن ورود و خود اپ
      چند ثانیه معطل می‌ماند. پس فونت با media=print گرفته و بعد از لود، همه‌جا فعال
@@ -811,9 +811,9 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
         --glass-tint-3: rgba(255,255,255,0.92);
     }
     body.dark {
-        --glass-tint-1: rgba(30,26,50,0.72);
-        --glass-tint-2: rgba(34,30,56,0.82);
-        --glass-tint-3: rgba(38,34,62,0.92);
+        --glass-tint-1: rgba(12,12,18,0.80);
+        --glass-tint-2: rgba(16,16,24,0.88);
+        --glass-tint-3: rgba(20,20,30,0.94);
     }
     /* هر کدام از این لایه‌ها یک blur جداگانه می‌سازند؛ روی موبایل حذف می‌شوند */
     .card::after, .movers-card::after, .stat::after, .news-card::after,
@@ -1046,6 +1046,95 @@ body.booted .app > *:nth-child(n+9) { animation-delay: 310ms; }
 .flag-chip.up .fc-code { color: var(--up); }
 .flag-chip.dn .fc-code { color: var(--down); }
 @media (max-width: 640px) { .flag-chip { padding: 6px 9px; font-size: 14px; } }
+
+/* =========================================================
+   لایه‌ی VAULT — الهام از هند‌آف «Vault — Crypto Wallet»
+   =========================================================
+   سه چیز از آن طرح برداشته شده و روی سیستم خودمان سوار شده است:
+     ۱) زمینه‌ی تیره‌ی خنثی (#07070d) با دو هاله‌ی بنفش/فیروزه‌ای،
+     ۲) عددهای مونو با ارقام جدولی و گرادیان سفید→یاسی برای عدد بزرگ،
+     ۳) گرادیان برند بنفش→فیروزه‌ای و چیپ‌های ریز گوشه‌گرد با حاشیه‌ی هم‌رنگ.
+   تم روشن و پالت‌های رنگ دست‌نخورده می‌مانند؛ همه‌ی قاعده‌های زیر فقط در
+   حالت تیره کار می‌کنند مگر آن‌که صریحاً پالت باشد. */
+
+body.dark {
+    background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.25), transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(56,189,248,0.15), transparent 50%),
+        radial-gradient(circle at 15% 5%, var(--c1), transparent 45%),
+        radial-gradient(circle at 88% 8%, var(--c2), transparent 45%),
+        radial-gradient(circle at 92% 95%, var(--c5), transparent 45%);
+}
+
+/* خط جداکننده‌ها: در تم تیره ۵٪ سفید (خط ۳۰٪ سفیدِ قبلی روی زمینه‌ی تیره
+   مثل نئون می‌درخشید) */
+body.dark .c-foot,
+body.dark .news-time,
+body.dark .movers-head,
+body.dark .c-det { border-color: var(--vault-divider); }
+body.dark .tick { border-left-color: var(--vault-divider); }
+
+/* چیپ تغییر قیمت: پس‌زمینه و حاشیه‌ی هم‌رنگ، گوشه‌ی ۶px، عدد مونو */
+.c-chg { padding: 3px 8px; border-radius: var(--vault-radius-chip); border: 1px solid transparent; font-family: var(--font-mono); font-size: 11px; }
+.c-chg.up { background: var(--chip-up-bg); border-color: var(--chip-up-edge); }
+.c-chg.dn { background: var(--chip-down-bg); border-color: var(--chip-down-edge); }
+.c-chg.fl { background: var(--chip-flat-bg); border-color: var(--chip-flat-edge); }
+body.dark .c-chg.up { background: var(--chip-up-bg); border-color: var(--chip-up-edge); }
+body.dark .c-chg.dn { background: var(--chip-down-bg); border-color: var(--chip-down-edge); }
+body.dark .c-chg.fl { background: var(--chip-flat-bg); border-color: var(--chip-flat-edge); color: var(--vault-mute); }
+.m-price .chg, .fng-bar .fng-class, .movers-head .count, .news-source-row .cat,
+.search-hint, .cmd-hint { border-radius: var(--vault-radius-chip); }
+.m-price .chg { font-family: var(--font-mono); }
+
+/* گرادیان برند: دکمه‌ی اصلی، تب فعال مودال، فیلتر خبر و نوار نوسان */
+.qa-btn.primary,
+.tf-btn.on,
+.news-chip.active {
+    background: var(--brand-gradient);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: var(--vault-glow), inset 0 1px 0 rgba(255,255,255,0.28);
+}
+.qa-btn.primary:hover, .tf-btn.on:hover, .news-chip.active:hover {
+    box-shadow: var(--vault-glow-lg), inset 0 1px 0 rgba(255,255,255,0.28);
+}
+.vol-item .vi-fill { background: var(--brand-gradient); }
+body.dark .vol-item .vi-bar { background: rgba(255,255,255,0.06); }
+
+/* تب فعال داشبورد: پرکننده‌ی ۸٪ + متن بنفش روشن (سبک selected-fill هند‌آف) */
+body.dark .tab.active {
+    background: var(--vault-selected);
+    color: var(--vault-violet-light);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+body.dark .tab[data-category="watchlist"].active {
+    background: var(--brand-gradient);
+    color: #fff;
+    box-shadow: var(--vault-glow);
+}
+
+/* نمودار و پنل عدد در تم تیره: شیشه‌ی نازک با گوشه‌ی ۲۲px */
+body.dark .m-chart,
+body.dark .m-price,
+body.dark .vol-item,
+body.dark .c-changes-row .cr {
+    background: var(--vault-panel);
+    border-color: var(--vault-stroke);
+}
+body.dark .m-chart { border-radius: var(--vault-radius-card); }
+body.dark .m-price { border-radius: var(--vault-radius-card); }
+
+/* آواتار نماد: حلقه‌ی نازک تا پرچم‌ها روی زمینه‌ی تیره لبه بگیرند */
+body.dark .c-ico, body.dark .mover-row .mr-flag { box-shadow: inset 0 0 0 1px var(--vault-stroke), 0 4px 12px rgba(0,0,0,0.35); }
+body.dark .mover-row .mr-flag { background: var(--vault-panel-2); }
+
+/* عددِ بزرگِ کارت و پنل عدد مودال: مونو، جمع‌تر، بدون لرزش */
+.c-price .vl { letter-spacing: -0.02em; }
+.m-price .vl { letter-spacing: -0.02em; }
+
+@media (prefers-reduced-motion: reduce) {
+    .qa-btn.primary, .tf-btn.on, .news-chip.active { transition: none; }
+}
 </style>
 </head>
 <body data-theme="aurora" lang="fa" dir="rtl">
