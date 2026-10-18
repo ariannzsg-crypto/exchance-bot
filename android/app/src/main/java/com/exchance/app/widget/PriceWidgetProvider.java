@@ -121,18 +121,38 @@ public class PriceWidgetProvider extends AppWidgetProvider {
         if (!RUNNING.compareAndSet(false, true)) {
             return;
         }
+        boolean fetched = false;
         try {
             List<Price> prices = PriceApi.fetch(context);
             if (!prices.isEmpty()) {
                 PriceStore.savePrices(context, prices);
                 Alerts.evaluate(context, prices);
+                fetched = true;
             }
         } catch (Exception e) {
             Log.w(TAG, "قیمت‌ها نیامد: " + e.getMessage());
         } finally {
+            // حتی تلاش ناموفق هم باید ثبت شود تا ویجت «در حال گرفتن» ابدی نشود
+            PriceStore.markAttempt(context, fetched);
             RUNNING.set(false);
             renderAll(context);
         }
+    }
+
+    /** یکا؛ برای رمزارزها قیمت دلاری هم کنار تومان می‌آید. */
+    private static String unitText(Price price) {
+        if (Double.isFinite(price.usd)) {
+            return price.unit + "  ·  $" + Money.price(price.usd);
+        }
+        return price.unit;
+    }
+
+    /** رنگ تغییر: سبز برای رشد، قرمز برای افت و خاکستری برای «بدون تغییر». */
+    private static int colorFor(double change) {
+        if (Money.isUp(change)) {
+            return R.color.ex_up;
+        }
+        return change < 0 ? R.color.ex_down : R.color.ex_text_dim;
     }
 
     private static RemoteViews viewFor(Context context, int widgetId) {
@@ -162,9 +182,13 @@ public class PriceWidgetProvider extends AppWidgetProvider {
 
         Price price = PriceStore.cached(context, code);
         if (price == null || !price.hasValue()) {
-            view.setTextViewText(R.id.ex_widget_flag, "⏳");
+            // «در حال گرفتن» فقط تا اولین تلاش واقعی درست است؛ بعد از آن اگر
+            // قیمتی نبود باید بگوییم در دسترس نیست، نه اینکه تا ابد منتظر بماند.
+            boolean tried = PriceStore.attemptedAt(context) > 0;
+            view.setTextViewText(R.id.ex_widget_flag, tried ? "⚠️" : "⏳");
             view.setTextViewText(R.id.ex_widget_name, code.toUpperCase(Locale.US));
-            view.setTextViewText(R.id.ex_widget_price, context.getString(R.string.ex_widget_loading));
+            view.setTextViewText(R.id.ex_widget_price,
+                    context.getString(tried ? R.string.ex_widget_error : R.string.ex_widget_loading));
             view.setTextViewText(R.id.ex_widget_change, "");
             view.setTextViewText(R.id.ex_widget_unit, "");
             return view;
@@ -173,10 +197,9 @@ public class PriceWidgetProvider extends AppWidgetProvider {
         view.setTextViewText(R.id.ex_widget_flag, price.flag.isEmpty() ? "💱" : price.flag);
         view.setTextViewText(R.id.ex_widget_name, price.name);
         view.setTextViewText(R.id.ex_widget_price, Money.price(price.value));
-        view.setTextViewText(R.id.ex_widget_unit, price.unit);
+        view.setTextViewText(R.id.ex_widget_unit, unitText(price));
         view.setTextViewText(R.id.ex_widget_change, Money.change(price.change));
-        view.setTextColor(R.id.ex_widget_change,
-                context.getColor(Money.isUp(price.change) ? R.color.ex_up : R.color.ex_down));
+        view.setTextColor(R.id.ex_widget_change, context.getColor(colorFor(price.change)));
         return view;
     }
 
@@ -190,7 +213,9 @@ public class PriceWidgetProvider extends AppWidgetProvider {
         Intent intent = new Intent(context, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putExtra("ex_symbol", code);
-        return PendingIntent.getActivity(context, 12, intent,
+        // کد درخواست باید برای هر نماد یکتا باشد؛ وگرنه FLAG_UPDATE_CURRENT
+        // اکسترای آخرین ویجت را روی بقیه می‌نویسد و همه یک نماد را باز می‌کنند.
+        return PendingIntent.getActivity(context, ("open:" + code).hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
@@ -198,7 +223,9 @@ public class PriceWidgetProvider extends AppWidgetProvider {
         Intent intent = new Intent(context, WidgetConfigActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-        return PendingIntent.getActivity(context, 13, intent,
+        // همین‌جا هم کد یکتا لازم است؛ وگرنه تنظیم یک ویجت، شناسه‌ی ویجت
+        // دیگری را باز می‌کند.
+        return PendingIntent.getActivity(context, ("cfg:" + widgetId).hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 }

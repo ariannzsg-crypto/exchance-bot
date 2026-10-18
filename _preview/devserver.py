@@ -88,10 +88,18 @@ class Handler(BaseHTTPRequestHandler):
     # --- API: دقیقاً همان کلاس‌های ورسل -------------------------------------
     def _delegate_api(self, module_name: str, method: str) -> bool:
         module = importlib.import_module(module_name)
-        target = getattr(module.handler, method, None)
+        endpoint_cls = module.handler
+        target = getattr(endpoint_cls, method, None)
         if target is None:
             return False
-        target(self)          # self همان هندلر است؛ فقط منطق از ماژول می‌آید
+        # هندلرهای ورسل متدهای کمکیِ خودشان را دارند (`_json` در history و
+        # fear_greed). اگر متد را روی همین هندلر صدا بزنیم آن کمکی‌ها پیدا
+        # نمی‌شوند و اتصال بدون پاسخ بسته می‌شود؛ پس یک نمونه از خودِ کلاس
+        # اندپوینت با همان سوکت و همان وضعیت می‌سازیم.
+        endpoint = endpoint_cls.__new__(endpoint_cls)
+        endpoint.__dict__.update(self.__dict__)
+        target(endpoint)
+        self.__dict__.update(endpoint.__dict__)   # close_connection و لاگ‌ها
         return True
 
     # --- استاتیک ------------------------------------------------------------

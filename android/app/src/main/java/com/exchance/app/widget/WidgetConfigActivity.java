@@ -71,6 +71,7 @@ public class WidgetConfigActivity extends Activity {
                 Price picked = adapter.getItem(position);
                 selected = picked.code;
                 status.setText(describe(picked));
+                adapter.notifyDataSetChanged();   // تیک روی ردیف انتخاب‌شده
             }
         });
 
@@ -241,7 +242,8 @@ public class WidgetConfigActivity extends Activity {
             Price p = getItem(position);
             TextView first = (TextView) view.findViewById(android.R.id.text1);
             TextView second = (TextView) view.findViewById(android.R.id.text2);
-            first.setText((p.flag.isEmpty() ? "" : p.flag + "   ") + p.name);
+            first.setText((p.code.equals(selected) ? "✓ " : "")
+                    + (p.flag.isEmpty() ? "" : p.flag + "   ") + p.name);
             second.setText(p.hasValue()
                     ? Money.price(p.value) + " " + p.unit + "   " + Money.change(p.change)
                     : "—");

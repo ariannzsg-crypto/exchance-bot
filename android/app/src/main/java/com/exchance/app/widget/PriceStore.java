@@ -19,6 +19,8 @@ public final class PriceStore {
     private static final String PREFS = "ex_price";
     private static final String CODES = "p_codes";
     private static final String UPDATED_AT = "p_at";
+    private static final String ATTEMPT_AT = "p_try_at";
+    private static final String ATTEMPT_OK = "p_try_ok";
 
     private PriceStore() {
     }
@@ -85,6 +87,27 @@ public final class PriceStore {
 
     public static long updatedAt(Context ctx) {
         return prefs(ctx).getLong(UPDATED_AT, 0L);
+    }
+
+    /**
+     * ثبت هر تلاش شبکه — حتی ناموفق.
+     *
+     * <p>بدون این، ویجت بعد از اولین تلاش ناموفق هم «در حال گرفتن قیمت…»
+     * می‌ماند و کاربر فکر می‌کند اپ خراب است.
+     */
+    public static void markAttempt(Context ctx, boolean ok) {
+        prefs(ctx).edit()
+                .putLong(ATTEMPT_AT, System.currentTimeMillis())
+                .putBoolean(ATTEMPT_OK, ok)
+                .apply();
+    }
+
+    public static long attemptedAt(Context ctx) {
+        return prefs(ctx).getLong(ATTEMPT_AT, 0L);
+    }
+
+    public static boolean lastAttemptOk(Context ctx) {
+        return prefs(ctx).getBoolean(ATTEMPT_OK, false);
     }
 
     // ------------------------------------------------------- نماد هر ویجت

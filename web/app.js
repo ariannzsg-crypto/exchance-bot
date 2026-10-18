@@ -19,6 +19,10 @@ const modal = $("chartModal"), modalPanel = $("modalPanel");
 const clockTime = $("clockTime"), clockDate = $("clockDate");
 const statsBar = $("statsBar"), statusBar = $("statusBar");
 
+const shareModal = $("shareModal"), shareClose = $("shareClose");
+const sharePreview = $("sharePreview"), shareSend = $("shareSend");
+const shareSave = $("shareSave"), shareCopy = $("shareCopy");
+
 const convBtn = $("convBtn"), convModal = $("convModal"), convClose = $("convClose");
 const convAmount = $("convAmount"), convFrom = $("convFrom"), convTo = $("convTo");
 const convSwap = $("convSwap"), convValue = $("convValue"), convRate = $("convRate");
@@ -291,6 +295,10 @@ const I18N = {
         fngLabel: "شاخص ترس و طمع", pwaInstall: "نصب روی گوشی",
         tf1d: "۱ روز", tf7d: "۷ روز", tf30d: "۳۰ روز", tf90d: "۹۰ روز", tf1y: "۱ سال",
         share: "اشتراک‌گذاری",
+        shareTitle: "📤 اشتراک‌گذاری نمودار", shareSend: "ارسال تصویر", shareSave: "ذخیره تصویر",
+        shareCopy: "کپی متن", sharePreviewAlt: "پیش‌نمایش کارت نمودار", shareSheetTitle: "ارسال نمودار",
+        shareHint: "تصویر همراه نمودار و لینک همین ارز ارسال می‌شود",
+        toastShareSaved: "تصویر نمودار ذخیره شد", toastShareFail: "اشتراک‌گذاری انجام نشد",
         compareTitle: "📊 مقایسه ارزها", cmpFirst: "ارز اول", cmpSecond: "ارز دوم",
         settingsTitle: "⚙️ تنظیمات",
         setSound: "صدای هشدار", setSoundSub: "پخش صدا وقتی هشدار فعال شد",
@@ -346,6 +354,10 @@ const I18N = {
         fngLabel: "Fear & Greed Index", pwaInstall: "Install app",
         tf1d: "1D", tf7d: "7D", tf30d: "30D", tf90d: "90D", tf1y: "1Y",
         share: "Share",
+        shareTitle: "📤 Share chart", shareSend: "Send image", shareSave: "Save image",
+        shareCopy: "Copy text", sharePreviewAlt: "Chart card preview", shareSheetTitle: "Send chart",
+        shareHint: "Sends the chart image plus a link to this symbol",
+        toastShareSaved: "Chart image saved", toastShareFail: "Sharing failed",
         compareTitle: "📊 Compare Currencies", cmpFirst: "First", cmpSecond: "Second",
         settingsTitle: "⚙️ Settings",
         setSound: "Alert sound", setSoundSub: "Play sound when alert triggers",
@@ -401,6 +413,10 @@ const I18N = {
         fngLabel: "مؤشر الخوف والجشع", pwaInstall: "ثبّت التطبيق",
         tf1d: "يوم", tf7d: "أسبوع", tf30d: "شهر", tf90d: "٩٠ يوم", tf1y: "سنة",
         share: "مشاركة",
+        shareTitle: "📤 مشاركة الرسم البياني", shareSend: "إرسال الصورة", shareSave: "حفظ الصورة",
+        shareCopy: "نسخ النص", sharePreviewAlt: "معاينة بطاقة الرسم البياني", shareSheetTitle: "إرسال الرسم البياني",
+        shareHint: "يُرسل صورة الرسم البياني مع رابط هذا الرمز",
+        toastShareSaved: "تم حفظ صورة الرسم البياني", toastShareFail: "تعذّر المشاركة",
         compareTitle: "📊 مقارنة العملات", cmpFirst: "الأولى", cmpSecond: "الثانية",
         settingsTitle: "⚙️ الإعدادات",
         setSound: "صوت التنبيه", setSoundSub: "تشغيل صوت عند التنبيه",
@@ -883,6 +899,7 @@ function cardInnerHtml(c) {
     const html =
         '<button class="chart-btn" type="button">📈</button>' +
         '<button class="cmp-btn" type="button" title="Compare">📊</button>' +
+        '<button class="share-btn" type="button">📤</button>' +
         '<div class="c-head"><div class="c-coin">' + avatarHtml(c) +
             '<div class="c-meta"><span class="c-name">' + esc(name) + '</span>' +
             '<span class="c-sub">' + esc(code.toUpperCase()) + '</span></div></div>' +
@@ -939,6 +956,11 @@ function wireCard(card, c) {
         starBtn.setAttribute("aria-pressed", isWatched(codeLc) ? "true" : "false");
         starBtn.setAttribute("aria-label", t("watchItem") + " " + label);
         starBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleWatch(codeLc); });
+    }
+    const shareBtn = card.querySelector(".share-btn");
+    if (shareBtn) {
+        shareBtn.setAttribute("aria-label", t("shareTitle") + " — " + label);
+        shareBtn.addEventListener("click", (e) => { e.stopPropagation(); openShare(c, { timeframe: "7d" }); });
     }
 }
 
@@ -1328,11 +1350,20 @@ function applyFilter() {
 ========================================================= */
 
 async function fetchHistory(code, days) {
+    /* اگر سرویس تاریخچه کند باشد، دکمه‌های بازه نباید تا ابد قفل بمانند؛
+       بعد از ۸ ثانیه رها می‌کنیم و نمودار روی داده‌ی جایگزین می‌رود. */
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
     try {
-        const res = await fetch(api(`/api/history?code=${encodeURIComponent(code)}&days=${days}&_=${Date.now()}`), { cache: "no-store" });
+        const res = await fetch(api(`/api/history?code=${encodeURIComponent(code)}&days=${days}&_=${Date.now()}`), {
+            cache: "no-store",
+            signal: ctrl ? ctrl.signal : undefined,
+        });
         const data = await res.json();
         if (data.success && Array.isArray(data.prices)) return data.prices;
-    } catch (e) {}
+    } catch (e) {} finally {
+        if (timer) clearTimeout(timer);
+    }
     return null;
 }
 
@@ -1352,8 +1383,10 @@ async function setTimeframe(tf) {
         const prices = await fetchHistory(currentChart.code, days);
         if (prices && prices.length >= 2) {
             liveChartData = prepareChartPoints(prices, currentChart.code, trendOf(currentChart.change).cls, 100);
-        } else if (!liveChartData.length) {
-            liveChartData = synthPoints(currentChart.code, trendOf(currentChart.change).cls, 80);
+        } else {
+            /* تاریخچه نیامد: به‌جای نگه‌داشتن نمودار بازه‌ی قبلی (که برچسب بازه‌ی
+               جدید را دروغ می‌کرد) یک نمودار هم‌خوان با همان بازه می‌سازیم. */
+            liveChartData = synthPoints(currentChart.code + ":" + tf, trendOf(currentChart.change).cls, days > 90 ? 110 : 80);
         }
     } catch (e) {}
     timeframeLoading = false;
@@ -1450,7 +1483,7 @@ function renderModal() {
         btn.addEventListener("click", () => setTimeframe(btn.dataset.tf));
     });
     const shareBtn = document.getElementById("modalShare");
-    if (shareBtn) shareBtn.addEventListener("click", () => shareCurrency(c));
+    if (shareBtn) shareBtn.addEventListener("click", () => openShare(c, { points: liveChartData, timeframe: currentTimeframe }));
     const cmpBtn = document.getElementById("modalCompare");
     if (cmpBtn) cmpBtn.addEventListener("click", () => { closeChart(); openCompare(code.toLowerCase()); });
     const alertBtn = document.getElementById("modalAlert");
@@ -1482,55 +1515,448 @@ function updateModalLiveData(fresh) {
 }
 
 /* =========================================================
-   SHARE
+   SHARE — کارت تصویریِ نمودار
 ========================================================= */
 
-async function shareCurrency(c) {
+const SHARE_TF_KEY = { "1d": "tf1d", "7d": "tf7d", "30d": "tf30d", "90d": "tf90d", "1y": "tf1y" };
+
+let shareState = null;
+
+/* لینکِ عمومیِ همان ارز. داخل اپ اندروید صفحه از داخل خود اپ سرو می‌شود و
+   location.origin به کار گیرنده نمی‌آید، پس آدرس دیپلوی مبنا است. */
+function shareUrlFor(code) {
+    const base = String(window.SHARE_BASE || API_BASE || location.origin || "").replace(/\/+$/, "");
+    return base + "/?code=" + encodeURIComponent(String(code || "").toLowerCase());
+}
+
+function shareTextFor(c) {
+    const name = c.name || String(c.code || "").toUpperCase();
+    const trend = trendOf(c.change);
+    const line = (c.flag ? c.flag + " " : "") + name + " — " + fmtNum(c.price) + " " + t("unit") + " (" + trend.text + ")";
+    return line + "\n" + shareUrlFor(c.code);
+}
+
+function hexToRgba(hex, alpha) {
+    const h = String(hex || "").replace("#", "");
+    const full = h.length === 3 ? h.split("").map(ch => ch + ch).join("") : h;
+    const n = parseInt(full, 16);
+    if (!Number.isFinite(n)) return "rgba(255,255,255," + alpha + ")";
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+}
+
+/* نمودارِ کارت را از همان نقاطی می‌کشد که در مودال دیده می‌شود،
+   پس تصویرِ ارسال‌شده با نمودارِ روی صفحه یکی است. */
+function drawShareChart(ctx, values, box, color) {
+    const vals = (values || []).map(Number).filter(Number.isFinite);
+    if (vals.length < 2) return;
+    const x = box.x, y = box.y, w = box.w, h = box.h;
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const span = max - min;
+    const padding = (span > 0 ? span : (Math.abs(max) * 0.01 || 1)) * 0.18;
+    const yMin = min - padding, yMax = max + padding;
+    const range = yMax - yMin || 1;
+    const step = w / (vals.length - 1);
+    const coords = vals.map((v, i) => [x + i * step, y + h - ((v - yMin) / range) * h]);
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 10]);
+    for (let i = 1; i <= 4; i++) {
+        const gy = y + (h * i) / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, gy);
+        ctx.lineTo(x + w, gy);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    const trace = () => {
+        ctx.beginPath();
+        coords.forEach((p, i) => (i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1])));
+    };
+
+    const areaGrad = ctx.createLinearGradient(0, y, 0, y + h);
+    areaGrad.addColorStop(0, hexToRgba(color, 0.42));
+    areaGrad.addColorStop(1, hexToRgba(color, 0.02));
+    trace();
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+    ctx.fillStyle = areaGrad;
+    ctx.fill();
+
+    trace();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.shadowColor = hexToRgba(color, 0.55);
+    ctx.shadowBlur = 22;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    const last = coords[coords.length - 1];
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 14, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.22);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 7, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    [coords[vals.indexOf(min)], coords[vals.indexOf(max)]].forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        ctx.fill();
+    });
+}
+
+function drawShareCard(c, points, timeframe) {
+    const W = 1080, H = 1080, pad = 72;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const trend = trendOf(c.change);
+    const color = trend.cls === "up" ? "#30a46c" : trend.cls === "dn" ? "#e5484d" : "#8b93ab";
+    const code = String(c.code || "").toUpperCase();
+    const typeLabel = typeLabelOf(c);
+    const tfKey = SHARE_TF_KEY[timeframe] || "tf7d";
+
+    const vals = (points || []).map(Number).filter(Number.isFinite);
+    const chartValues = vals.length >= 2 ? vals : synthPoints(String(c.code || ""), trend.cls, 90);
+    const high = Math.max(...chartValues);
+    const low = Math.min(...chartValues);
+    const avg = chartValues.reduce((a, b) => a + b, 0) / chartValues.length;
+
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, "#14112c");
+    bg.addColorStop(0.55, "#1d1543");
+    bg.addColorStop(1, "#0c0a1a");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const glow = ctx.createRadialGradient(W * 0.92, 30, 0, W * 0.92, 30, W * 0.9);
+    glow.addColorStop(0, hexToRgba(color, 0.30));
+    glow.addColorStop(1, hexToRgba(color, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
+    ctx.lineWidth = 2;
+    roundRectPath(ctx, 24, 24, W - 48, H - 48, 44);
+    ctx.stroke();
+
+    ctx.direction = "ltr";
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 34px 'Vazirmatn', Tahoma, sans-serif";
+    ctx.fillText("EXCHANCE", pad, 108);
+
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "500 22px 'Vazirmatn', Tahoma, sans-serif";
+    let stamp = "";
     try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 800; canvas.height = 500;
-        const ctx = canvas.getContext("2d");
-        const grad = ctx.createLinearGradient(0, 0, 800, 500);
-        grad.addColorStop(0, "#0e0a1e");
-        grad.addColorStop(0.5, "#1a1035");
-        grad.addColorStop(1, "#0e0a1e");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 800, 500);
-        const flag = c.flag || "💱";
-        ctx.font = "64px 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Vazirmatn', sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText(flag, 750, 130);
-        ctx.font = "bold 32px 'Vazirmatn', Tahoma, sans-serif";
-        ctx.fillStyle = "#f0f0fa";
-        ctx.textAlign = "right";
-        ctx.direction = "rtl";
-        ctx.fillText(c.name || c.code.toUpperCase(), 700, 130);
-        const price = Number(c.price) || 0;
-        const priceStr = Math.round(price).toLocaleString("en-US");
-        ctx.font = "bold 72px 'JetBrains Mono', monospace";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "right";
+        const locale = currentLang === "fa" ? "fa-IR" : currentLang === "ar" ? "ar-EG" : "en-US";
+        stamp = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date());
+    } catch (e) { stamp = new Date().toLocaleString(); }
+    ctx.fillText(stamp, pad, 146);
+
+    ctx.textAlign = "right";
+    ctx.direction = "rtl";
+    ctx.font = "64px 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif";
+    ctx.fillText(c.flag || "💱", W - pad, 112);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 52px 'Vazirmatn', Tahoma, sans-serif";
+    ctx.fillText(String(c.name || code), W - pad, 208);
+
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font = "500 24px 'Vazirmatn', Tahoma, sans-serif";
+    ctx.fillText(code + " · " + typeLabel, W - pad, 248);
+
+    ctx.direction = "ltr";
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 96px 'JetBrains Mono', ui-monospace, monospace";
+    ctx.fillText(fmtNum(c.price), W - pad, 388);
+
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = "500 26px 'Vazirmatn', Tahoma, sans-serif";
+    ctx.fillText(t("unit"), W - pad, 424);
+
+    const chg = trend.text;
+    ctx.font = "700 30px 'Vazirmatn', Tahoma, sans-serif";
+    const cw = Math.max(150, ctx.measureText(chg).width + 56);
+    ctx.fillStyle = hexToRgba(color, 0.16);
+    roundRectPath(ctx, pad, 318, cw, 62, 31);
+    ctx.fill();
+    ctx.strokeStyle = hexToRgba(color, 0.4);
+    ctx.lineWidth = 2;
+    roundRectPath(ctx, pad, 318, cw, 62, 31);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.fillText(chg, pad + cw / 2, 360);
+
+    drawShareChart(ctx, chartValues, { x: pad, y: 470, w: W - pad * 2, h: 300 }, color);
+
+    const stats = [
+        { label: t("chartHigh"), value: fmtNum(high) },
+        { label: t("chartLow"), value: fmtNum(low) },
+        { label: t("chartAvg"), value: fmtNum(Math.round(avg)) },
+    ];
+    const boxW = (W - pad * 2 - 36) / 3;
+    const boxY = 820, boxH = 116;
+    stats.forEach((s, i) => {
+        const bx = pad + i * (boxW + 18);
+        ctx.fillStyle = "rgba(255,255,255,0.05)";
+        roundRectPath(ctx, bx, boxY, boxW, boxH, 26);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.lineWidth = 1.5;
+        roundRectPath(ctx, bx, boxY, boxW, boxH, 26);
+        ctx.stroke();
+        ctx.textAlign = "center";
         ctx.direction = "ltr";
-        ctx.fillText(priceStr, 700, 260);
-        ctx.font = "500 20px 'Vazirmatn', Tahoma, sans-serif";
-        ctx.fillStyle = "rgba(160, 160, 190, 1)";
-        ctx.direction = "rtl";
-        ctx.textAlign = "right";
-        ctx.fillText("تومان", 700, 295);
-        const blob = await new Promise(res => canvas.toBlob(res, "image/png", 0.95));
-        if (!blob) throw new Error("no_blob");
-        const file = new File([blob], `${c.code}-price.png`, { type: "image/png" });
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: c.name || c.code, text: `${c.name} — ${fmtNum(c.price)} تومان` });
-        } else {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = `${c.code}-price.png`;
-            document.body.appendChild(a); a.click();
-            setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "500 22px 'Vazirmatn', Tahoma, sans-serif";
+        ctx.fillText(s.label, bx + boxW / 2, boxY + 46);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "700 32px 'JetBrains Mono', ui-monospace, monospace";
+        ctx.fillText(s.value, bx + boxW / 2, boxY + 90);
+    });
+
+    const tfText = t(tfKey);
+    ctx.font = "700 24px 'Vazirmatn', Tahoma, sans-serif";
+    const tfw = ctx.measureText(tfText).width + 44;
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    roundRectPath(ctx, pad, 966, tfw, 48, 24);
+    ctx.fill();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.fillText(tfText, pad + tfw / 2, 998);
+
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.font = "500 22px 'JetBrains Mono', ui-monospace, monospace";
+    ctx.fillText(shareUrlFor(c.code).replace(/^https?:\/\//, ""), W - pad, 1000);
+
+    return canvas;
+}
+
+function shareCardBlob(c, points, timeframe) {
+    return new Promise((resolve, reject) => {
+        try {
+            const canvas = drawShareCard(c, points, timeframe);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("no_blob")), "image/png");
+        } catch (e) { reject(e); }
+    });
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+/* پل بومیِ اندروید: فایل را در کش می‌نویسد و با شیت اشتراک اندروید می‌فرستد.
+   بدون این مسیر، WebView اندروید فایل را با navigator.share نمی‌سازد. */
+async function nativeShareImage(s) {
+    const cap = window.Capacitor;
+    if (!cap || typeof cap.nativePromise !== "function") return false;
+    if (typeof cap.getPlatform === "function" && cap.getPlatform() === "web") return false;
+    try {
+        const base64 = await blobToBase64(s.blob);
+        const saved = await cap.nativePromise("Filesystem", "writeFile", {
+            path: "share/" + s.filename,
+            data: base64,
+            directory: "CACHE",
+            recursive: true,
+        });
+        if (!saved || !saved.uri) return false;
+        await cap.nativePromise("Share", "share", {
+            title: s.title,
+            text: s.text,
+            files: [saved.uri],
+            dialogTitle: t("shareSheetTitle"),
+        });
+        return true;
+    } catch (e) {
+        console.warn("Native share unavailable:", e);
+        return false;
+    }
+}
+
+async function openShare(c, opts) {
+    if (!c) return;
+    opts = opts || {};
+    const code = String(c.code || "").toLowerCase();
+    const timeframe = opts.timeframe || "7d";
+    let points = Array.isArray(opts.points) ? opts.points.slice() : [];
+    if (points.length < 2) {
+        points = prepareChartPoints(getHistory(c), code, trendOf(c.change).cls, 90);
+    }
+
+    let blob = null;
+    try {
+        blob = await shareCardBlob(c, points, timeframe);
+    } catch (e) {
+        console.warn("Share card failed:", e);
+    }
+
+    if (shareState && shareState.url) URL.revokeObjectURL(shareState.url);
+    shareState = {
+        blob,
+        filename: "exchance-" + (code.replace(/[^a-z0-9_-]/g, "") || "chart") + "-" + timeframe + ".png",
+        title: c.name || String(c.code || "").toUpperCase(),
+        text: shareTextFor(c),
+        url: blob ? URL.createObjectURL(blob) : "",
+    };
+
+    if (!shareModal) {
+        await sendShareImage();
+        return;
+    }
+    if (sharePreview) {
+        if (shareState.url) sharePreview.src = shareState.url;
+        else sharePreview.removeAttribute("src");
+        sharePreview.hidden = !shareState.url;
+    }
+    if (shareSend) shareSend.disabled = !blob;
+    if (shareSave) shareSave.disabled = !blob;
+    openModal(shareModal, "#shareSend");
+    haptic();
+}
+
+function closeShare() {
+    closeModal(shareModal);
+    if (sharePreview) sharePreview.removeAttribute("src");
+    if (shareState && shareState.url) URL.revokeObjectURL(shareState.url);
+    shareState = null;
+}
+
+async function sendShareImage() {
+    const s = shareState;
+    if (!s) return;
+    if (!s.blob) { copyShareText(); return; }
+    try {
+        if (await nativeShareImage(s)) {
+            haptic();
+            closeShare();
+            return;
         }
-        haptic();
-    } catch (e) { console.error("Share error:", e); }
+        const file = new File([s.blob], s.filename, { type: "image/png" });
+        if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            await navigator.share({ files: [file], title: s.title, text: s.text });
+            haptic();
+            closeShare();
+            return;
+        }
+        downloadShareImage();
+    } catch (e) {
+        if (e && e.name === "AbortError") return;   // کاربر شیت را بست
+        console.warn("Share failed:", e);
+        toast(t("toastShareFail"));
+    }
+}
+
+function downloadShareImage() {
+    const s = shareState;
+    if (!s || !s.blob) return;
+    const url = URL.createObjectURL(s.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = s.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    haptic();
+    toast(t("toastShareSaved"), "success");
+}
+
+async function copyShareText() {
+    const text = (shareState && shareState.text) || "";
+    if (!text) return;
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            throw new Error("no_clipboard");
+        }
+    } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); } catch (err) {}
+        ta.remove();
+    }
+    toast(t("toastCopied"), "success");
+    haptic();
+}
+
+/* نمادی که از ویجت/اعلان اندروید آمده است. ممکن است هنوز قیمت‌ها
+   نرسیده باشند، پس تا رسیدنشان صبر می‌کند و بعد نمودار را باز می‌کند. */
+let pendingNativeSymbol = "";
+
+function openPendingNativeSymbol() {
+    if (!pendingNativeSymbol) return;
+    const wanted = pendingNativeSymbol;
+    const found = currencies.find(x => String(x.code || "").toLowerCase() === wanted);
+    if (!found) return;
+    pendingNativeSymbol = "";
+    openChart(found);
+}
+
+/* پل کوچکی برای اپ اندروید: ویجت و اعلان کد نماد را با خود می‌آورند. */
+window.exOpenSymbol = function (code) {
+    const wanted = String(code || "").toLowerCase().trim();
+    if (!wanted) return false;
+    pendingNativeSymbol = wanted;
+    const found = currencies.find(x => String(x.code || "").toLowerCase() === wanted);
+    if (found) {
+        pendingNativeSymbol = "";
+        openChart(found);
+    }
+    return true;
+};
+
+/* لینک اشتراک‌گذاشته‌شده (?code=btc) مستقیم همان نمودار را باز می‌کند. */
+let sharedChartOpened = false;
+
+function openSharedChartFromUrl() {
+    if (sharedChartOpened || !currencies.length) return;
+    let wanted = "";
+    try { wanted = String(new URLSearchParams(location.search).get("code") || "").toLowerCase(); }
+    catch (e) { wanted = ""; }
+    if (!wanted) { sharedChartOpened = true; return; }
+    const found = currencies.find(x => String(x.code || "").toLowerCase() === wanted);
+    if (!found) { sharedChartOpened = true; return; }
+    sharedChartOpened = true;
+    openChart(found);
+    try { history.replaceState(null, "", location.pathname); } catch (e) {}
 }
 
 /* =========================================================
@@ -1568,6 +1994,8 @@ function handleSnapshot(list, updatedAt) {
     renderFlagStrip();
     renderTopMovers();
     renderVolatility();
+    openSharedChartFromUrl();
+    openPendingNativeSymbol();
 
     const st = marketStatusOf(currencies);
     if (marketStatus) {
@@ -2386,6 +2814,13 @@ if (compareModal) compareModal.addEventListener("click", (e) => { if (e.target.d
 if (cmpA) cmpA.addEventListener("change", () => { compareState.a = cmpA.value; renderCompare(); });
 if (cmpB) cmpB.addEventListener("change", () => { compareState.b = cmpB.value; renderCompare(); });
 
+// Share
+if (shareClose) shareClose.addEventListener("click", closeShare);
+if (shareModal) shareModal.addEventListener("click", (e) => { if (e.target.dataset.closeShare === "1") closeShare(); });
+if (shareSend) shareSend.addEventListener("click", sendShareImage);
+if (shareSave) shareSave.addEventListener("click", downloadShareImage);
+if (shareCopy) shareCopy.addEventListener("click", copyShareText);
+
 // Command Palette
 if (cmdBtn) cmdBtn.addEventListener("click", openCmd);
 if (cmdModal) cmdModal.addEventListener("click", (e) => { if (e.target.dataset.closeCmd === "1") closeCmd(); });
@@ -2455,6 +2890,7 @@ document.addEventListener("keydown", (e) => {
     }
     // Escape
     if (e.key === "Escape") {
+        if (shareModal && shareModal.classList.contains("on")) { closeShare(); return; }
         if (cmdModal && cmdModal.classList.contains("on")) closeCmd();
         if (modal && modal.classList.contains("on")) closeChart();
         if (convModal && convModal.classList.contains("on")) closeConverter();

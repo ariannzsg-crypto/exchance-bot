@@ -30,5 +30,5 @@
     <string name="ex_notif_perm">برای گرفتن هشدار، اجازه‌ی اعلان را بده</string>
 
     <!-- آدرس API؛ باید با DEPLOYED_API در web/config.js یکی باشد (تست دارد) -->
-    <string name="ex_api_base" translatable="false">https://exchance-bot.vercel.app</string>
+    <string name="ex_api_base" translatable="false">https://exchance-bot-hatamarian84-8671.vercel.app</string>
 </resources>

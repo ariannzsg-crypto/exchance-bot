@@ -321,6 +321,12 @@ body.dark .card .cmp-btn { background: rgba(255,255,255,0.12); }
 .card .cmp-btn:hover { background: var(--cyan-9); color: #fff; transform: scale(1.15); }
 @media (max-width: 640px) { .card .cmp-btn { opacity: 0.9; } }
 
+.card .share-btn { position: absolute; top: 10px; left: 74px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-full); background: rgba(255,255,255,0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); font-size: 12px; color: var(--text-secondary); opacity: 0; transition: all var(--dur-normal) var(--ease-spring); z-index: 5; }
+body.dark .card .share-btn { background: rgba(255,255,255,0.12); }
+.card:hover .share-btn { opacity: 1; }
+.card .share-btn:hover { background: var(--up); color: #fff; transform: scale(1.15); }
+@media (max-width: 640px) { .card .share-btn { opacity: 0.9; } }
+
 .c-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); margin-bottom: 12px; }
 .c-coin { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
 .c-ico { flex: 0 0 42px; width: 42px; height: 42px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: var(--font-extrabold); color: #fff; box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), 0 4px 12px rgba(0,0,0,0.15); text-shadow: 0 1px 2px rgba(0,0,0,0.2); overflow: hidden; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Vazirmatn', sans-serif; line-height: 1; }
@@ -435,6 +441,15 @@ body.dark .m-timeframes { background: rgba(255,255,255,0.06); }
 body.dark .m-action-btn { background: rgba(255,255,255,0.08); }
 .m-action-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-glow-accent); }
 .m-action-btn:active { transform: translateY(0) scale(0.96); }
+
+/* ============ SHARE ============ */
+.share-panel { max-width: 560px; }
+.share-preview-wrap { margin: var(--space-3) 0 var(--space-4); border-radius: var(--radius-xl); overflow: hidden; background: #12102a; border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg); aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+.share-preview { display: block; width: 100%; height: 100%; object-fit: contain; }
+.share-preview[hidden] { display: none; }
+.share-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.share-actions .m-action-btn:disabled { opacity: 0.45; pointer-events: none; }
+.share-hint { margin-top: var(--space-2); font-size: 11px; color: var(--text-tertiary); text-align: center; }
 .m-chart-live-badge { position: absolute; top: 14px; right: 14px; display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-full); background: var(--up-bg); color: var(--up); font-size: 10.5px; font-weight: var(--font-extrabold); z-index: 2; letter-spacing: 0.4px; }
 .m-chart-live-badge::before { content: ""; width: 7px; height: 7px; border-radius: var(--radius-full); background: var(--up); animation: pulse 1.5s infinite; box-shadow: 0 0 8px var(--up); }
 .m-chart { position: relative; width: 100%; height: 210px; margin-bottom: 10px; padding: 10px; border-radius: var(--radius-xl); background: rgba(255,255,255,0.35); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-highlight); }
@@ -826,8 +841,9 @@ body.compact .foot { padding: 14px; margin-top: var(--space-3); }
     .topbar .ibtn { width: 40px; height: 40px; }
     .search .clr { width: 38px; height: 38px; right: 10px; }
     .star-btn { width: 34px; height: 34px; }
-    .card .chart-btn, .card .cmp-btn { width: 34px; height: 34px; opacity: 0.92; }
+    .card .chart-btn, .card .cmp-btn, .card .share-btn { width: 34px; height: 34px; opacity: 0.92; }
     .card .cmp-btn { left: 50px; }
+    .card .share-btn { left: 90px; }
     .news-chip, .qa-btn, .tf-btn { min-height: 40px; }
     .conv-quick button, .m-action-btn { min-height: 44px; }
     .modal-close { width: 40px; height: 40px; }
@@ -1238,6 +1254,24 @@ body.booted .app > *:nth-child(n+9) { animation-delay: 310ms; }
     <div class="modal-panel" id="modalPanel"></div>
 </div>
 
+<!-- SHARE MODAL -->
+<div id="shareModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="shareTitle" aria-hidden="true">
+    <div class="modal-bg" data-close-share="1"></div>
+    <div class="modal-panel share-panel" id="sharePanel">
+        <button class="modal-close" id="shareClose" type="button" data-i18n-aria="closeDialog">✕</button>
+        <div class="port-title" id="shareTitle" data-i18n="shareTitle">📤 اشتراک‌گذاری نمودار</div>
+        <div class="share-preview-wrap">
+            <img id="sharePreview" class="share-preview" data-i18n-aria="sharePreviewAlt" alt="" hidden />
+        </div>
+        <div class="share-actions">
+            <button class="m-action-btn" id="shareSend" type="button">📤 <span data-i18n="shareSend">ارسال تصویر</span></button>
+            <button class="m-action-btn" id="shareSave" type="button">⬇️ <span data-i18n="shareSave">ذخیره تصویر</span></button>
+            <button class="m-action-btn" id="shareCopy" type="button">🔗 <span data-i18n="shareCopy">کپی متن</span></button>
+        </div>
+        <div class="share-hint" data-i18n="shareHint">تصویر همراه با نمودار و لینک همین ارز ارسال می‌شود</div>
+    </div>
+</div>
+
 <!-- COMPARE MODAL -->
 <div id="compareModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cmpTitle" aria-hidden="true">
     <div class="modal-bg" data-close-cmp="1"></div>
@@ -1433,6 +1467,6 @@ body.booted .app > *:nth-child(n+9) { animation-delay: 310ms; }
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <script src="/config.js?v=1"></script>
-<script src="/app.js?v=82"></script>
+<script src="/app.js?v=84"></script>
 </body>
 </html>

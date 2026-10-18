@@ -81,8 +81,9 @@ public final class Notifier {
         view.setTextViewText(R.id.ex_notif_name, p.name);
         view.setTextViewText(R.id.ex_notif_price, priceText);
         view.setTextViewText(R.id.ex_notif_change, Money.change(p.change));
-        view.setTextColor(R.id.ex_notif_change,
-                ctx.getColor(Money.isUp(p.change) ? R.color.ex_up : R.color.ex_down));
+        int changeColor = Money.isUp(p.change) ? R.color.ex_up
+                : p.change < 0 ? R.color.ex_down : R.color.ex_text_dim;
+        view.setTextColor(R.id.ex_notif_change, ctx.getColor(changeColor));
         view.setTextViewText(R.id.ex_notif_note, body);
 
         Intent open = new Intent(ctx, MainActivity.class)

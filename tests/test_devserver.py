@@ -6,6 +6,7 @@
 اندپوینت‌هایی که به اینترنت نیاز دارند صدا زده نمی‌شوند.
 """
 
+import json
 import os
 import socket
 import subprocess
@@ -82,6 +83,19 @@ def test_server_serves_the_frontend_over_http(base_url):
     assert script.status == 200
     assert "javascript" in script.headers.get("Content-Type", "")
     assert script.body == (ROOT / "web" / "app.js").read_text(encoding="utf-8")
+
+
+def test_endpoints_with_their_own_helpers_answer_over_http(base_url):
+    """رگرسیون: `history` متد کمکیِ `_json` را روی خودش دارد.
+
+    قبلاً متد مستقیماً روی هندلر توسعه اجرا می‌شد، پس `_json` پیدا نمی‌شد و
+    اتصال بی‌پاسخ بسته می‌شد؛ نمودار مودال در پیش‌نمایش محلی هیچ داده‌ای نمی‌گرفت.
+    """
+    resp = request(base_url + "/api/history?code=usd&days=7")
+    assert resp.status == 200
+    assert "application/json" in resp.headers.get("Content-Type", "")
+    data = json.loads(resp.body)
+    assert data["success"] is False and data["reason"] == "history_not_available"
 
 
 def test_unknown_paths_and_escapes_are_404_not_leaks(base_url):

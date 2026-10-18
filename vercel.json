@@ -1,15 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "outputDirectory": "web",
   "rewrites": [
     { "source": "/api/fear-greed", "destination": "/api/fear_greed" }
   ],
-  "cleanUrls": true,
-  "functions": {
-    "api/market.py": { "maxDuration": 30 },
-    "api/history.py": { "maxDuration": 30 },
-    "api/news.py": { "maxDuration": 30 },
-    "api/chart.py": { "maxDuration": 30 },
-    "api/fear_greed.py": { "maxDuration": 15 }
-  }
+  "cleanUrls": true
 }

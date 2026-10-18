@@ -49,12 +49,13 @@
             android:name=".widget.AlertAlarmReceiver"
             android:exported="false" />
 
-        <!-- بعد از ریبوت، آلارم‌ها و قیمت ویجت‌ها دوباره سرِ کار بیایند -->
+        <!-- بعد از ریبوت یا آپدیت اپ، آلارم‌ها و قیمت ویجت‌ها دوباره سرِ کار بیایند -->
         <receiver
             android:name=".widget.BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

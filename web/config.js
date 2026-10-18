@@ -10,7 +10,7 @@
 (function () {
     "use strict";
 
-    var DEPLOYED_API = "https://exchance-bot.vercel.app";
+    var DEPLOYED_API = "https://exchance-bot-hatamarian84-8671.vercel.app";
 
     var isNative = !!(window.Capacitor &&
         typeof window.Capacitor.isNativePlatform === "function" &&

@@ -81,6 +81,14 @@ def test_manifest_rearms_alerts_after_a_reboot(manifest):
     assert "android.permission.INTERNET" in perms
 
 
+def test_an_app_update_rearms_alerts_too(manifest):
+    """آپدیت اپ هم آلارم‌ها را پاک می‌کند، نه فقط ریبوت گوشی."""
+    boot = components(manifest, "receiver")[".widget.BootReceiver"]
+    assert "android.intent.action.MY_PACKAGE_REPLACED" in actions_of(boot)
+    receiver = (WIDGET_JAVA / "BootReceiver.java").read_text(encoding="utf-8")
+    assert "ACTION_MY_PACKAGE_REPLACED" in receiver
+
+
 # --- منابع ویجت -----------------------------------------------------------------
 
 
@@ -143,6 +151,53 @@ def test_widget_shows_flag_price_and_change():
 # --- رفتار پس‌زمینه -------------------------------------------------------------
 
 
+def test_each_widget_tap_target_is_unique():
+    """درخواست‌کد ثابت، اکسترای ویجت‌های مختلف را روی هم می‌نویسد."""
+    provider = (WIDGET_JAVA / "PriceWidgetProvider.java").read_text(encoding="utf-8")
+    assert '("open:" + code).hashCode()' in provider
+    assert '("cfg:" + widgetId).hashCode()' in provider
+    assert "getActivity(context, 12," not in provider, "کد ثابت ۱۲ همه‌ی ویجت‌ها را یکی می‌کند"
+    assert "getActivity(context, 13," not in provider, "تنظیم هر ویجت باید شناسه‌ی خودش را بگیرد"
+
+
+def test_tapping_a_widget_opens_that_symbol_in_the_app():
+    """ویجت کد نماد را می‌فرستد؛ اپ باید واقعاً همان نمودار را باز کند."""
+    js = (ROOT / "web" / "app.js").read_text(encoding="utf-8")
+    main = (JAVA / "MainActivity.java").read_text(encoding="utf-8")
+    assert 'getStringExtra("ex_symbol")' in main
+    assert "exOpenSymbol" in main, "صفحه‌ی وب باید نماد را از پل بگیرد"
+    # مقدار اکسترا قبل از رفتن داخل جاوااسکریپت پالایش می‌شود
+    assert 'replaceAll("[^a-z0-9_-]"' in main
+    assert "window.exOpenSymbol" in js
+    assert "pendingNativeSymbol" in js, "اگر قیمت‌ها نرسیده باشند باید نگه دارد"
+    assert "openPendingNativeSymbol();" in js
+
+
+def test_widget_reports_unavailable_instead_of_loading_forever():
+    provider = (WIDGET_JAVA / "PriceWidgetProvider.java").read_text(encoding="utf-8")
+    store = (WIDGET_JAVA / "PriceStore.java").read_text(encoding="utf-8")
+    assert "PriceStore.attemptedAt(context)" in provider
+    assert "R.string.ex_widget_error" in provider
+    assert "R.string.ex_widget_loading" in provider
+    assert "markAttempt" in provider and "markAttempt" in store, \
+        "هر تلاش شبکه باید ثبت شود تا حالت «در حال گرفتن» پایان داشته باشد"
+    assert "ATTEMPT_AT" in store and "ATTEMPT_OK" in store
+
+
+def test_unchanged_price_is_grey_not_green_or_red():
+    provider = (WIDGET_JAVA / "PriceWidgetProvider.java").read_text(encoding="utf-8")
+    notifier = (WIDGET_JAVA / "Notifier.java").read_text(encoding="utf-8")
+    for code in (provider, notifier):
+        assert "R.color.ex_text_dim" in code, "تغییر صفر باید خاکستری باشد"
+        assert "change < 0" in code
+
+
+def test_crypto_widget_shows_the_usd_price_too():
+    provider = (WIDGET_JAVA / "PriceWidgetProvider.java").read_text(encoding="utf-8")
+    assert "price.usd" in provider
+    assert "unitText(price)" in provider
+
+
 def test_refresh_survives_the_broadcast_and_stays_off_the_main_thread():
     provider = (WIDGET_JAVA / "PriceWidgetProvider.java").read_text(encoding="utf-8")
     assert "goAsync()" in provider, "بدون goAsync پروسه وسط درخواست کشته می‌شود"
@@ -203,10 +258,59 @@ def test_config_screen_saves_the_symbol_and_the_thresholds():
     assert "AppWidgetManager.EXTRA_APPWIDGET_ID" in config
     assert "setResult(RESULT_CANCELED)" in config, "تا «ذخیره» نزنیم ویجت نباید اضافه شود"
     assert "PriceStore.setWidgetCode" in config
+    assert '"✓ "' in config and "notifyDataSetChanged()" in config, \
+        "ردیف انتخاب‌شده باید نشانه داشته باشد"
     assert "PriceStore.setAlerts" in config
     assert "AlertScheduler.sync" in config
     assert "POST_NOTIFICATIONS" in config, "وقتی کاربر حد گذاشت باید اجازه‌ی اعلان را بخواهد"
     assert "PriceApi.fetch" in config, "فهرست نمادها باید از همان API بیاید"
+
+
+# --- قرارداد با API -------------------------------------------------------------
+
+
+def test_widget_reads_exactly_the_keys_the_api_sends(monkeypatch):
+    """ویجت این کلیدها را از JSON می‌خواند.
+
+    اگر نام کلیدی در API عوض شود، ویجت بی‌صدا «قیمت در دسترس نیست» می‌ماند و
+    هیچ‌کس نمی‌فهمد چرا. پس همان نام‌ها را روی پاسخ واقعیِ /api/market قفل می‌کنیم.
+    """
+    import api.market as market_api
+
+    from _helpers import request, serve
+
+    fake = {
+        "usd": {
+            "code": "usd", "name": "دلار آمریکا", "short": "دلار", "flag": "🇺🇸",
+            "price": 264305.0, "change": 0.68, "unit": "تومان", "type": "fiat",
+        },
+        "btc": {
+            "code": "btc", "name": "بیت‌کوین", "short": "BTC", "flag": "₿",
+            "price": 2.2e10, "change": 1.5, "unit": "تومان",
+            "type": "crypto", "usd_price": 85000.0,
+        },
+    }
+    monkeypatch.setattr(market_api, "get_market", lambda: fake)
+
+    with serve("api.market") as base:
+        resp = request(base + "/api/market")
+
+    assert resp.status == 200
+    rows = resp.json()["currencies"]
+    assert [r["code"] for r in rows] == ["usd", "btc"]
+
+    api_java = (WIDGET_JAVA / "PriceApi.java").read_text(encoding="utf-8")
+    keys = set(re.findall(r'opt(?:String|Double)\("([a-z_]+)"', api_java))
+    assert "code" in keys and "price" in keys, "کلیدهای JSON در PriceApi.java پیدا نشد"
+    assert '"/api/market"' in api_java, "ویجت باید همین اندپوینت را بخواند"
+
+    for row in rows:
+        missing = sorted(k for k in keys if k not in row)
+        assert missing == [], f"{row['code']}: این کلیدها در پاسخ API نیستند {missing}"
+
+    # خط دلاری ویجت فقط وقتی معنا دارد که رمزارزها قیمت دلاری بدهند
+    crypto = next(r for r in rows if r["code"] == "btc")
+    assert isinstance(crypto["usd_price"], (int, float))
 
 
 def test_widget_and_app_agree_on_the_api_host():

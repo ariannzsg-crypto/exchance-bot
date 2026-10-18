@@ -9,7 +9,11 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent == null || !Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+        String action = intent == null ? "" : String.valueOf(intent.getAction());
+        // آپدیت اپ هم آلارم‌ها را پاک می‌کند؛ بدون این حالت، هشدارها بعد از
+        // هر به‌روزرسانی از فروشگاه تا باز شدن دستی اپ خاموش می‌مانند.
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(action)
+                && !Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             return;
         }
         Context app = context.getApplicationContext();

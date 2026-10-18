@@ -168,6 +168,78 @@ def test_symbol_card_shows_the_flag_next_to_the_code(js):
     assert 't("goldLabel")' in js and "function typeLabelOf(c)" in js
 
 
+# --- اشتراک‌گذاری نمودار ---------------------------------------------------------
+
+
+def test_share_card_draws_the_real_chart_and_price(js):
+    """تصویر ارسالی باید همان نمودار و قیمت باشد، نه فقط یک عدد روی زمینه."""
+    assert "function drawShareCard(c, points, timeframe)" in js
+    assert "function drawShareChart(ctx, values, box, color)" in js
+    assert "drawShareChart(ctx, chartValues" in js, "کارت باید نمودار را بکشد"
+    # نمودارِ کارت از همان نقاطی می‌آید که در مودال انتخاب شده است
+    assert "opts.points" in js and "liveChartData" in js
+    assert "prepareChartPoints(getHistory(c), code" in js, "برای کارت‌ها باید تاریخچه بخواند"
+    assert "W = 1080, H = 1080" in js
+    assert '"EXCHANCE"' in js and 't("unit")' in js
+    assert 'SHARE_TF_KEY' in js and "t(tfKey)" in js, "بازه‌ی زمانی روی کارت بیاید"
+    # رنگ نمودار با جهت قیمت هماهنگ است
+    assert 'trend.cls === "up" ? "#30a46c"' in js
+
+
+def test_share_sheet_shows_a_preview_and_actions(html, js):
+    assert 'id="shareModal"' in html and 'id="sharePreview"' in html
+    assert 'id="shareSend"' in html and 'id="shareSave"' in html and 'id="shareCopy"' in html
+    assert 'data-close-share="1"' in html, "کلیک روی پس‌زمینه باید مودال را ببندد"
+    assert "sharePreview.src = shareState.url" in js, "پیش‌نمایش باید عکس واقعیِ ساخته‌شده باشد"
+    assert "shareSend.addEventListener(\"click\", sendShareImage)" in js
+    assert "shareSave.addEventListener(\"click\", downloadShareImage)" in js
+    assert "shareCopy.addEventListener(\"click\", copyShareText)" in js
+    # حافظه‌ی blob باید آزاد شود تا باز و بسته کردن مودال نشتی نداشته باشد
+    assert "URL.revokeObjectURL(shareState.url)" in js
+
+
+def test_android_sends_the_png_through_the_native_share_sheet(js):
+    """WebView اندروید فایل را با navigator.share نمی‌فرستد؛ مسیر بومی لازم است."""
+    assert 'cap.nativePromise("Filesystem", "writeFile"' in js
+    assert 'directory: "CACHE"' in js and "recursive: true" in js
+    assert 'cap.nativePromise("Share", "share"' in js
+    assert "files: [saved.uri]" in js, "فایل باید با URI واقعی فایل به شیت برود"
+    assert "function blobToBase64(blob)" in js
+    # ترتیب فالبک: بومی، بعد Web Share، بعد دانلود
+    body = js[js.index("async function sendShareImage()"):js.index("function downloadShareImage()")]
+    assert body.index("nativeShareImage(s)") < body.index("navigator.share") < body.index("downloadShareImage()")
+    assert 'e.name === "AbortError"' in body, "بستن شیت توسط کاربر خطا نیست"
+
+
+def test_slow_history_does_not_lock_the_timeframe_buttons(js):
+    """وقتی سرویس تاریخچه جواب نمی‌دهد، نمودار و دکمه‌ها نباید قفل شوند."""
+    assert "new AbortController()" in js and "ctrl.abort()" in js
+    assert "clearTimeout(timer)" in js, "تایمر باید بعد از پاسخ یا خطا هم پاک شود"
+    assert 'synthPoints(currentChart.code + ":" + tf' in js, \
+        "در نبود داده، نمودار باید با بازه‌ی جدید بازسازی شود نه بازه‌ی قبلی"
+
+
+def test_every_card_and_the_chart_modal_can_share(html, js):
+    assert 'class="share-btn"' in js and 'card.querySelector(".share-btn")' in js
+    assert 'openShare(c, { timeframe: "7d" })' in js
+    assert 'openShare(c, { points: liveChartData, timeframe: currentTimeframe })' in js, \
+        "دکمه‌ی مودال باید همان بازه‌ای را بفرستد که کاربر می‌بیند"
+    assert ".card .share-btn" in html
+    assert ".card .cmp-btn { left: 50px; }" in html and ".card .share-btn { left: 90px; }" in html, \
+        "دکمه‌ها روی موبایل نباید روی هم بیفتند"
+
+
+def test_shared_link_opens_that_symbol_right_away(js):
+    assert "function shareUrlFor(code)" in js and '"/?code="' in js
+    assert "window.SHARE_BASE || API_BASE || location.origin" in js, \
+        "در اپ، لینک باید به سایت دیپلوی‌شده اشاره کند نه localhost"
+    assert 'new URLSearchParams(location.search).get("code")' in js
+    assert "openSharedChartFromUrl();" in js
+    call_site = js.index("renderVolatility();\n    openSharedChartFromUrl();")
+    assert call_site > 0, "بعد از رسیدن قیمت‌ها باید لینک را باز کند"
+    assert "openChart(found);" in js and "history.replaceState" in js
+
+
 # --- ترجمه‌ها -------------------------------------------------------------------
 
 

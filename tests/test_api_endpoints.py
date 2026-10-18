@@ -304,7 +304,9 @@ def test_vercel_config_points_at_real_files():
     assert config["outputDirectory"] == "web"
     assert (ROOT / "web" / "index.html").is_file()
 
-    for path in config["functions"]:
+    # اگر فانکشنی اعلام شده باشد باید فایلش باشد. در مدل entrypoint (preset پایتون)
+    # این بلوک وجود ندارد و همان یک فانکشن از pyproject.toml می‌آید.
+    for path in config.get("functions", {}):
         assert (ROOT / path).is_file(), f"فانکشن اعلام‌شده وجود ندارد: {path}"
 
     # مقصد rewrite یک «مسیر» است نه مسیر فایل: /api/fear-greed → api/fear_greed.py
@@ -329,3 +331,85 @@ def test_frontend_js_only_calls_existing_endpoints():
 
     for name in called:
         assert name in available or name in rewrites, f"مسیر بی‌مقصد در فرانت‌اند: /api/{name}"
+
+
+def test_vercel_does_not_use_the_python_framework_preset():
+    """preset پایتون نباید فعال باشد.
+
+    در این حالت ورسل کل ترافیک را به یک «entrypoint برنامه» می‌برد و اگر آن
+    را در مکان‌های پیش‌فرض پیدا نکند با PYTHON_ENTRYPOINT_NOT_FOUND می‌میرد —
+    دقیقاً همان خطایی که دیپلوی را می‌کشت. خروجی استاتیک + api/*.py مدلی است
+    که این پروژه با آن ساخته شده (README هم Framework Preset = Other می‌گوید).
+    """
+    from _helpers import ROOT
+
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    assert config.get("framework") is None, (
+        "vercel.json نباید framework پایتون را انتخاب کند؛ preset باید null باشد"
+    )
+
+
+def test_python_entrypoint_exists_in_a_default_location():
+    """ورودی باید در یکی از مکان‌های پیش‌فرض ورسل با نام `handler` باشد.
+
+    مکان‌های پیش‌فرض: app/index/server/main/wsgi/asgi.py در ریشه، یا داخل
+    src/، app/ و api/. api/index.py همین است و همه‌ی مسیرهایی که فرانت‌اند
+    صدا می‌زند (و rewriteهای vercel.json) باید از دل آن رد شوند، چون در مدل
+    فریمورکی فقط همین فایل ساخته می‌شود.
+    """
+    import re
+    from _helpers import ROOT
+
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    entry = ROOT / "api" / "index.py"
+    assert entry.is_file(), "ورودی پیش‌فرض ورسل (api/index.py) وجود ندارد"
+
+    # پریست پایتون اسم مکان پیش‌فرض را هم قبول نمی‌کند؛ ورسل خودش گفته که راه
+    # قطعی، اعلام entrypoint در pyproject.toml است. اگر این خط برود، بیلد با
+    # PYTHON_ENTRYPOINT_NOT_FOUND می‌میرد.
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert re.search(r'^\s*entrypoint\s*=\s*"api\.index:handler"', pyproject, re.M), \
+        "pyproject.toml باید entrypoint = \"api.index:handler\" را اعلام کند"
+    assert re.search(r"^class\s+handler\s*\(", entry.read_text(encoding="utf-8"), re.M), \
+        "ورودی ورسل باید کلاس سطح‌بالای `handler` داشته باشد"
+
+    import api.index as index_api
+
+    js = "\n".join(p.read_text(encoding="utf-8") for p in (ROOT / "web").glob("*.js"))
+    called = {"/api/" + name for name in re.findall(r"/api/([a-z0-9_-]+)", js)}
+    missing = called - set(index_api.ROUTES)
+    assert not missing, f"مسیر فرانت‌اند از ورودی ورسل رد نمی‌شود: {sorted(missing)}"
+
+    # rewriteها در مدل فریمورکی اعمال نمی‌شوند؛ خودِ ورودی باید معادلش را داشته باشد
+    for rule in config["rewrites"]:
+        assert rule["source"] in index_api.ROUTES, \
+            f"rewrite از ورودی ورسل رد نمی‌شود: {rule['source']}"
+
+
+def test_index_entrypoint_delegates_to_the_real_endpoints(monkeypatch):
+    """ورودی ورسل باید پاسخ را عیناً از خودِ اندپوینت بگیرد.
+
+    روی HTTP واقعی تست می‌شود: هم /api/chart از دل ورودی، هم همان مسیر به‌طور
+    مستقیم؛ پاسخ دو تا باید بایت‌به‌بایت یکسان باشد. مسیر ناشناخته هم 404 JSON.
+    """
+    import api.chart as chart_api
+
+    fake_market = {
+        "usd": {"code": "usd", "name": "دلار آمریکا", "price": 264305.0,
+                "change": 0.68, "unit": "تومان"},
+    }
+    monkeypatch.setattr(chart_api, "get_market", lambda: fake_market)
+
+    with serve("api.index") as via_index, serve("api.chart") as direct:
+        a = request(via_index + "/api/chart?code=usd")
+        b = request(direct + "/api/chart?code=usd")
+        assert a.status == b.status == 200
+        assert a.json() == b.json(), "پاسخ از دل ورودی با پاسخ اندپوینت یکی نیست"
+        assert a.json()["success"] is True and "quickchart.io" in a.json()["chart_url"]
+
+        unknown = request(via_index + "/api/nope")
+        assert unknown.status == 404
+        assert unknown.json()["success"] is False
+
+        listed = request(via_index + "/api")
+        assert listed.status == 200 and "/api/market" in listed.json()["endpoints"]
